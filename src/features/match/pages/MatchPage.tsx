@@ -88,7 +88,7 @@ export default function MatchPage() {
   }
 
   if (finishedMatch) {
-    return <MatchResultOverlay match={finishedMatch} onBack={handleBackFromResult} />;
+    return <MatchResultOverlay match={finishedMatch} onBack={handleBackFromResult} userId={user?.uid || ""} />;
   }
 
   return (

@@ -73,15 +73,19 @@ export function useConfirmVictory() {
     mutationFn: ({ matchId, playerId }: { matchId: string; playerId: string }) =>
       matchService.confirmVictory(matchId, playerId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["match", "active"] });
-      queryClient.invalidateQueries({ queryKey: ["match", "activeForPlayer"] });
-      queryClient.invalidateQueries({ queryKey: ["match", "history"] });
-      queryClient.invalidateQueries({ queryKey: ["match", "recent"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["player"] });
-      queryClient.invalidateQueries({ queryKey: ["playerStats"] });
-      queryClient.invalidateQueries({ queryKey: ["statistics"] });
-      queryClient.invalidateQueries({ queryKey: ["doubles"] });
+      console.log("[useConfirmVictory] Invalidating all queries with refetchType=all");
+      queryClient.invalidateQueries({ queryKey: ["match", "active"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["match", "activeForPlayer"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["match", "history"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["match", "recent"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["ranking"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["player"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["playerStats"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["statistics"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["doubles"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["matchHistory"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["rankingEvolution"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["chartData"], refetchType: "all" });
     },
   });
 }

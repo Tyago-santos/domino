@@ -6,6 +6,7 @@ import type { GameMatch, MatchPlayer } from "@/shared/types";
 interface MatchResultOverlayProps {
   match: GameMatch;
   onBack: () => void;
+  userId: string;
 }
 
 function formatDuration(seconds: number): string {
@@ -16,7 +17,7 @@ function formatDuration(seconds: number): string {
   return `${m}min ${s}s`;
 }
 
-export function MatchResultOverlay({ match, onBack }: MatchResultOverlayProps) {
+export function MatchResultOverlay({ match, onBack, userId }: MatchResultOverlayProps) {
   const winnerPlayer = match.mode === "individual" && match.winnerId
     ? match.players.find((p) => p.id === match.winnerId)
     : null;
@@ -26,15 +27,20 @@ export function MatchResultOverlay({ match, onBack }: MatchResultOverlayProps) {
       ? match.teamA?.name || "Equipe Azul"
       : match.teamB?.name || "Equipe Vermelha";
 
-  const winningPlayers =
+  const winningTeamPlayers =
     match.winningTeam === "A"
-      ? match.teamA?.playerIds.map((id) => match.players.find((p) => p.id === id)).filter(Boolean) as MatchPlayer[]
-      : match.teamB?.playerIds.map((id) => match.players.find((p) => p.id === id)).filter(Boolean) as MatchPlayer[];
+      ? match.teamA?.playerIds ?? []
+      : match.teamB?.playerIds ?? [];
+
+  const winningPlayers =
+    winningTeamPlayers.map((id) => match.players.find((p) => p.id === id)).filter(Boolean) as MatchPlayer[];
 
   const losingPlayers =
     match.winningTeam === "A"
       ? match.teamB?.playerIds.map((id) => match.players.find((p) => p.id === id)).filter(Boolean) as MatchPlayer[]
       : match.teamA?.playerIds.map((id) => match.players.find((p) => p.id === id)).filter(Boolean) as MatchPlayer[];
+
+  const isWinner = winningTeamPlayers.includes(userId);
 
   return (
     <motion.div
@@ -62,7 +68,7 @@ export function MatchResultOverlay({ match, onBack }: MatchResultOverlayProps) {
             transition={{ delay: 0.3 }}
             className="mt-3 text-lg font-bold text-white sm:mt-4 sm:text-2xl"
           >
-            Partida Encerrada!
+            {isWinner ? "Parabéns, mais uma Auréa farmada após vitória" : "Partida Encerrada!"}
           </motion.h2>
         </div>
 

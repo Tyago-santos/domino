@@ -66,13 +66,17 @@ export function RankingEvolutionChart() {
     );
   }
 
-  const chartData = data.map((point) => ({
-    date: new Date(point.date).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-    }),
-    ranking: point.value,
-  }));
+  const chartData = data.map((point) => {
+    const [y, m, d] = point.date.split("-");
+    const date = new Date(Number(y), Number(m) - 1, Number(d) || 1);
+    return {
+      date: date.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "short",
+      }),
+      ranking: point.value,
+    };
+  });
 
   return (
     <Card>

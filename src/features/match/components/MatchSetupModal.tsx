@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -155,13 +155,24 @@ export function MatchSetupModal({ open, onClose }: MatchSetupModalProps) {
     );
   }
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   if (!open) return null;
 
   const totalSteps = steps.length;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -174,7 +185,7 @@ export function MatchSetupModal({ open, onClose }: MatchSetupModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="relative z-10 mx-0 flex h-full max-h-full w-full flex-col overflow-hidden rounded-none border-0 border-surface-border bg-surface shadow-2xl sm:mx-4 sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl sm:border"
+          className="relative z-10 mx-0 flex h-full max-h-full w-full flex-col overflow-hidden rounded-none border-0 border-surface-border bg-surface shadow-2xl sm:mx-4 sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl sm:border md:max-w-2xl lg:max-w-3xl"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-surface-border px-3 py-2 sm:px-6 sm:py-4">

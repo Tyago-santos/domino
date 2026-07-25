@@ -219,8 +219,16 @@ export async function confirmVictory(
     await updatePlayerStats(loserIds, "loss");
 
     const finishedMatch: GameMatch = { ...match, winningTeam, status: "finished", endedAt, duration };
-    await recordPlayerHistory(finishedMatch, winnerIds, loserIds, endedAt, duration);
-    await moveToHistory(matchId, finishedMatch);
+    try {
+      await recordPlayerHistory(finishedMatch, winnerIds, loserIds, endedAt, duration);
+    } catch {
+      // Prevent crash — moveToHistory and onSuccess still run
+    }
+    try {
+      await moveToHistory(matchId, finishedMatch);
+    } catch {
+      // Prevent crash — onSuccess still runs
+    }
     return { finalized: true, match: finishedMatch };
   }
 

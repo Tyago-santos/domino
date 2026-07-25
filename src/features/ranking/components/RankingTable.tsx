@@ -76,7 +76,7 @@ export function RankingTable({ entries, currentUserId }: RankingTableProps) {
   return (
     <Card className="overflow-hidden">
       {/* Desktop table */}
-      <div className="hidden overflow-x-auto sm:block">
+      <div className="hidden overflow-x-auto sm:block md:overflow-visible">
         <div className="grid grid-cols-[3rem_1fr_1fr_1fr_3.5rem_8rem_2.5rem_2.5rem_1.5rem] items-center gap-3 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
           <span className="text-center">#</span>
           <span>Jogador</span>

@@ -30,7 +30,7 @@ interface NavItem {
 const navigation: NavItem[] = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard },
   { label: "Partidas", path: "/play", icon: Swords },
-  { label: "Ranking", path: "/ranking", icon: Trophy },
+  { label: "Ranking de Auréa", path: "/ranking", icon: Trophy },
   { label: "Perfil", path: "/profile", icon: User },
   { label: "Estatísticas", path: "/statistics", icon: BarChart3 },
   { label: "Histórico", path: "/history", icon: History },

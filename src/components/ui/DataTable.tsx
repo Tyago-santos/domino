@@ -134,7 +134,7 @@ function DataTableInner<T extends Record<string, unknown>>(
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-md border border-surface-border dark:border-surface-border">
+      <div className="overflow-x-auto rounded-md border border-surface-border dark:border-surface-border md:overflow-visible">
         <table className="w-full caption-bottom text-sm">
           <thead className="border-b border-surface-border dark:border-surface-border">
             <tr>

@@ -62,9 +62,9 @@ export function PlayerSelector({
         )}
       </div>
 
-      <div className="max-h-52 space-y-1.5 overflow-y-auto sm:max-h-72 sm:space-y-2">
+      <div className="space-y-1.5 sm:space-y-2 md:grid md:grid-cols-2 md:gap-2 md:space-y-0 lg:grid-cols-3">
         {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex items-center gap-2 rounded-lg border border-surface-border p-2 sm:gap-3 sm:p-3">
               <Skeleton className="h-8 w-8 rounded-full sm:h-10 sm:w-10" />
               <div className="flex-1 space-y-1">
@@ -74,7 +74,7 @@ export function PlayerSelector({
             </div>
           ))
         ) : filtered.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-surface-border p-4 text-center sm:p-6">
+          <div className="col-span-full rounded-lg border border-dashed border-surface-border p-4 text-center sm:p-6">
             <Users className="mx-auto mb-1.5 h-6 w-6 text-text-muted sm:mb-2 sm:h-8 sm:w-8" />
             <p className="text-[10px] text-text-muted sm:text-sm">Nenhum jogador encontrado</p>
           </div>

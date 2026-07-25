@@ -52,7 +52,7 @@ export function TeamRanking({ teams, myTeamId, isLoading }: TeamRankingProps) {
   return (
     <Card className="overflow-hidden">
       {/* Desktop table */}
-      <div className="hidden overflow-x-auto sm:block">
+      <div className="hidden overflow-x-auto sm:block md:overflow-visible">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-surface-border bg-surface-muted dark:bg-surface-muted">

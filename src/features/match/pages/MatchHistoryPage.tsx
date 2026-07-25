@@ -106,7 +106,7 @@ export default function MatchHistoryPage() {
         ) : data?.matches && data.matches.length > 0 ? (
           <>
             {/* Desktop Table */}
-            <div className="hidden overflow-hidden rounded-xl border border-surface-border bg-surface md:block">
+            <div className="hidden overflow-x-auto rounded-xl border border-surface-border bg-surface md:block md:overflow-visible">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-surface-border bg-surface-muted">

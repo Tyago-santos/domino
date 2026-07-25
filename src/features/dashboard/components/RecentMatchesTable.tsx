@@ -124,7 +124,7 @@ export function RecentMatchesTable() {
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden overflow-x-auto rounded-md border border-surface-border dark:border-surface-border sm:block">
+            <div className="hidden overflow-x-auto rounded-md border border-surface-border dark:border-surface-border sm:block md:overflow-visible">
               <table className="w-full text-sm">
                 <thead className="border-b border-surface-border dark:border-surface-border">
                   <tr>

@@ -67,7 +67,7 @@ export default function RankingPage() {
             <Trophy className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-text">Ranking Geral</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-text">Top Farmadores de Auréa</h1>
             <p className="text-sm text-text-muted">Classificação dos jogadores por pontuação</p>
           </div>
         </div>
