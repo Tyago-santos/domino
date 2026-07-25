@@ -45,6 +45,97 @@ function toDateRange(period?: PeriodFilter): { start: Date; end: Date } {
   return { start, end };
 }
 
+function getBucketKey(date: Date, period?: PeriodFilter): string {
+  const useDailyBuckets = period === "today" || period === "7days" || period === "30days";
+  if (useDailyBuckets) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  }
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function normalizeIds(ids: string[] = []): string {
+  return [...ids].sort().join("|");
+}
+
+interface GameMatchPlayer {
+  id: string;
+  name: string;
+  nickname: string;
+  avatar?: string;
+  category: string;
+}
+
+type MatchRecord = Record<string, any>;
+
+interface GameMatchData {
+  id?: string;
+  mode?: string;
+  status?: string;
+  players?: GameMatchPlayer[];
+  teamA?: { name: string; playerIds: string[] };
+  teamB?: { name: string; playerIds: string[] };
+  winnerId?: string;
+  winningTeam?: "A" | "B";
+  startedAt?: string;
+  endedAt?: string;
+  duration?: number;
+  createdAt?: string;
+  tournament?: string;
+}
+
+function isGameMatchData(data: MatchRecord): data is MatchRecord & GameMatchData {
+  return Array.isArray(data.players);
+}
+
+function isFinishedDoublesMatch(data: MatchRecord): data is MatchRecord & GameMatchData {
+  return isGameMatchData(data) && data.mode === "doubles" && data.status === "finished";
+}
+
+function teamIsOnSide(team: TeamData, playerIds?: string[]): boolean {
+  if (!playerIds) return false;
+  return normalizeIds([team.player1Id, team.player2Id]) === normalizeIds(playerIds);
+}
+
+function getMatchDateValue(data: GameMatchData): string {
+  if (typeof data.endedAt === "string" && data.endedAt) return data.endedAt;
+  if (typeof data.createdAt === "string" && data.createdAt) return data.createdAt;
+  return "";
+}
+
+function getMatchSortValue(data: GameMatchData): number {
+  const value = getMatchDateValue(data);
+  return value ? new Date(value).getTime() : 0;
+}
+
+function getTeamSide(team: TeamData, data: GameMatchData): "A" | "B" | null {
+  if (teamIsOnSide(team, data.teamA?.playerIds)) return "A";
+  if (teamIsOnSide(team, data.teamB?.playerIds)) return "B";
+  return null;
+}
+
+async function getFinishedDoublesMatchEntries(): Promise<Array<{ id: string; data: GameMatchData }>> {
+  const snap = await get(ref(db, "matches"));
+  const entries: Array<{ id: string; data: GameMatchData }> = [];
+
+  snap.forEach((child) => {
+    const data = child.val() as Record<string, unknown>;
+    if (isFinishedDoublesMatch(data)) {
+      entries.push({ id: child.key!, data });
+    }
+  });
+
+  entries.sort((a, b) => getMatchSortValue(a.data) - getMatchSortValue(b.data));
+  return entries;
+}
+
+async function getTeamMatches(team: TeamData): Promise<Array<{ id: string; data: GameMatchData; side: "A" | "B" }>> {
+  const entries = await getFinishedDoublesMatchEntries();
+  return entries.flatMap((entry) => {
+    const side = getTeamSide(team, entry.data);
+    return side ? [{ ...entry, side }] : [];
+  });
+}
+
 interface PlayerData {
   name: string;
   nickname: string;
@@ -55,7 +146,6 @@ interface PlayerData {
   category: string;
   bio?: string;
   registrationDate?: string;
-  score?: number;
 }
 
 interface TeamData {
@@ -64,18 +154,6 @@ interface TeamData {
   player2Id: string;
   club: string;
   city: string;
-}
-
-interface DoublesMatchData {
-  team1Id: string;
-  team2Id: string;
-  date: string;
-  result: string;
-  score1: number;
-  score2: number;
-  duration: number;
-  tournament?: string;
-  rounds?: number;
 }
 
 interface MatchData {
@@ -101,7 +179,6 @@ async function getPlayerById(uid: string): Promise<Player | null> {
     bio: d.bio || "",
     registrationDate: d.registrationDate || "",
     ranking: 0,
-    score: d.score || 0,
     totalMatches: 0,
     wins: 0,
     losses: 0,
@@ -117,21 +194,16 @@ async function buildTeamFromDb(teamId: string, d: TeamData): Promise<Team | null
   const p2 = await getPlayerById(d.player2Id);
   if (!p1 || !p2) return null;
 
-  const matchesSnap1 = await get(
-    query(ref(db, "doublesMatches"), orderByChild("team1Id"), equalTo(teamId))
-  );
-  const matchesSnap2 = await get(
-    query(ref(db, "doublesMatches"), orderByChild("team2Id"), equalTo(teamId))
-  );
+  const matches = await getTeamMatches(d);
 
   let wins = 0;
   let losses = 0;
   let streak = 0;
   let bestStreak = 0;
 
-  matchesSnap1.forEach((child) => {
-    const data = child.val() as DoublesMatchData;
-    if (data.result === "win") {
+  for (const match of matches) {
+    const won = match.side === match.data.winningTeam;
+    if (won) {
       wins++;
       streak++;
       if (streak > bestStreak) bestStreak = streak;
@@ -139,19 +211,7 @@ async function buildTeamFromDb(teamId: string, d: TeamData): Promise<Team | null
       losses++;
       streak = 0;
     }
-  });
-
-  matchesSnap2.forEach((child) => {
-    const data = child.val() as DoublesMatchData;
-    if (data.result === "loss") {
-      wins++;
-      streak++;
-      if (streak > bestStreak) bestStreak = streak;
-    } else {
-      losses++;
-      streak = 0;
-    }
-  });
+  }
 
   const total = wins + losses;
 
@@ -160,7 +220,6 @@ async function buildTeamFromDb(teamId: string, d: TeamData): Promise<Team | null
     name: d.name,
     player1: p1,
     player2: p2,
-    score: 0,
     ranking: 0,
     totalMatches: total,
     wins,
@@ -189,6 +248,27 @@ export async function getTeams(_uid?: string): Promise<Team[]> {
   teams.sort((a, b) => b.wins - a.wins);
   teams.forEach((t, i) => (t.ranking = i + 1));
   return teams;
+}
+
+export async function deleteTeam(uid?: string): Promise<void> {
+  if (!uid) throw new Error("uid obrigatório");
+  const snap = await get(
+    query(ref(db, "teams"), orderByChild("player1Id"), equalTo(uid))
+  );
+  if (snap.exists()) {
+    let teamKey = "";
+    snap.forEach((child) => { teamKey = child.key!; });
+    if (teamKey) await set(ref(db, `teams/${teamKey}`), null);
+    return;
+  }
+  const snap2 = await get(
+    query(ref(db, "teams"), orderByChild("player2Id"), equalTo(uid))
+  );
+  if (snap2.exists()) {
+    let teamKey = "";
+    snap2.forEach((child) => { teamKey = child.key!; });
+    if (teamKey) await set(ref(db, `teams/${teamKey}`), null);
+  }
 }
 
 export async function getMyTeam(uid?: string): Promise<Team | null> {
@@ -226,7 +306,7 @@ export async function getMyTeam(uid?: string): Promise<Team | null> {
 export async function getDoublesMatchHistory(
   uid?: string,
   filters?: {
-    result?: "win" | "loss" | "draw";
+    result?: "win" | "loss";
     period?: PeriodFilter;
     page?: number;
     pageSize?: number;
@@ -237,69 +317,33 @@ export async function getDoublesMatchHistory(
   const myTeam = await getMyTeam(uid);
   if (!myTeam) return { matches: [], total: 0, page: 1, pageSize: 10, totalPages: 0 };
 
-  const snap1 = await get(
-    query(ref(db, "doublesMatches"), orderByChild("team1Id"), equalTo(myTeam.id))
-  );
-  const snap2 = await get(
-    query(ref(db, "doublesMatches"), orderByChild("team2Id"), equalTo(myTeam.id))
-  );
-
   const allMatches: DoublesMatch[] = [];
-  const teamCache = new Map<string, string>();
 
-  async function getTeamName(teamId: string): Promise<string> {
-    if (teamCache.has(teamId)) return teamCache.get(teamId)!;
-    const snap = await get(ref(db, `teams/${teamId}`));
-    const name = snap.exists() ? (snap.val() as TeamData).name : "";
-    teamCache.set(teamId, name);
-    return name;
-  }
-
-  const matchEntries1: { key: string; data: DoublesMatchData }[] = [];
-  snap1.forEach((child) => {
-    matchEntries1.push({ key: child.key!, data: child.val() as DoublesMatchData });
+  const matches = await getTeamMatches({
+    name: myTeam.name,
+    player1Id: myTeam.player1.id,
+    player2Id: myTeam.player2.id,
+    club: myTeam.club,
+    city: myTeam.city,
   });
 
-  const matchEntries2: { key: string; data: DoublesMatchData }[] = [];
-  snap2.forEach((child) => {
-    matchEntries2.push({ key: child.key!, data: child.val() as DoublesMatchData });
-  });
-
-  for (const entry of matchEntries1) {
+  for (const entry of matches) {
     const d = entry.data;
-    const t1Name = await getTeamName(d.team1Id);
-    const t2Name = await getTeamName(d.team2Id);
+    const teamAName = d.teamA?.name || "";
+    const teamBName = d.teamB?.name || "";
     allMatches.push({
-      id: entry.key,
-      date: d.date?.split("T")[0] || "",
-      time: d.date?.split("T")[1]?.substring(0, 5) || "",
-      team1: { id: d.team1Id, name: t1Name },
-      team2: { id: d.team2Id, name: t2Name },
-      result: d.result as "win" | "loss" | "draw",
-      score1: d.score1,
-      score2: d.score2,
-      duration: d.duration,
+      id: entry.id,
+      date: getMatchDateValue(d).split("T")[0] || "",
+      time: getMatchDateValue(d).split("T")[1]?.substring(0, 5) || "",
+      team1: { id: normalizeIds(d.teamA?.playerIds || []), name: teamAName },
+      team2: { id: normalizeIds(d.teamB?.playerIds || []), name: teamBName },
+      mySide: entry.side === "A" ? "team1" : "team2",
+      result: ((d.winningTeam === "A" && entry.side === "A") || (d.winningTeam === "B" && entry.side === "B"))
+        ? "win"
+        : "loss",
+      duration: d.duration || 0,
       tournament: d.tournament || "",
-      rounds: d.rounds || 0,
-    });
-  }
-
-  for (const entry of matchEntries2) {
-    const d = entry.data;
-    const t1Name = await getTeamName(d.team1Id);
-    const t2Name = await getTeamName(d.team2Id);
-    allMatches.push({
-      id: entry.key,
-      date: d.date?.split("T")[0] || "",
-      time: d.date?.split("T")[1]?.substring(0, 5) || "",
-      team1: { id: d.team1Id, name: t1Name },
-      team2: { id: d.team2Id, name: t2Name },
-      result: (d.team1Id === myTeam.id ? (d.result === "win" ? "loss" : "win") : d.result) as "win" | "loss" | "draw",
-      score1: d.score1,
-      score2: d.score2,
-      duration: d.duration,
-      tournament: d.tournament || "",
-      rounds: d.rounds || 0,
+      rounds: 0,
     });
   }
 
@@ -327,11 +371,26 @@ export async function getDoublesStats(uid?: string): Promise<DoublesStats> {
   if (!myTeam) {
     return {
       totalMatches: 0, wins: 0, losses: 0, winRate: 0,
-      currentStreak: 0, bestStreak: 0, avgScore: 0, avgScoreConceded: 0,
+      currentStreak: 0, bestStreak: 0,
       avgMatchDuration: 0, bestPartner: "", totalPartners: 0,
-      ranking: 0, score: 0,
+      ranking: 0,
     };
   }
+
+  const matches = await getTeamMatches({
+    name: myTeam.name,
+    player1Id: myTeam.player1.id,
+    player2Id: myTeam.player2.id,
+    club: myTeam.club,
+    city: myTeam.city,
+  });
+
+  const durations = matches
+    .map((match) => match.data.duration || 0)
+    .filter((duration) => duration > 0);
+  const averageDuration = durations.length
+    ? Math.round(durations.reduce((sum, duration) => sum + duration, 0) / durations.length / 60)
+    : 0;
 
   return {
     totalMatches: myTeam.totalMatches,
@@ -340,13 +399,10 @@ export async function getDoublesStats(uid?: string): Promise<DoublesStats> {
     winRate: myTeam.winRate,
     currentStreak: myTeam.currentStreak,
     bestStreak: myTeam.bestStreak,
-    avgScore: myTeam.totalMatches > 0 ? Math.round((myTeam.wins * 180 + myTeam.losses * 130) / myTeam.totalMatches) : 0,
-    avgScoreConceded: myTeam.totalMatches > 0 ? Math.round((myTeam.wins * 130 + myTeam.losses * 180) / myTeam.totalMatches) : 0,
-    avgMatchDuration: myTeam.totalMatches > 0 ? 37 : 0,
-    bestPartner: myTeam.player2.name,
-    totalPartners: 1,
+    avgMatchDuration: averageDuration,
+    bestPartner: myTeam.player2.nickname || myTeam.player2.name,
+    totalPartners: myTeam.totalMatches > 0 ? 1 : 0,
     ranking: myTeam.ranking,
-    score: myTeam.score,
   };
 }
 
@@ -374,49 +430,36 @@ export async function getPartners(uid?: string): Promise<Partner[]> {
 export async function getDoublesChartData(
   uid?: string,
   period: PeriodFilter = "30days"
-): Promise<{ winsEvolution: ChartDataPoint[]; scoreEvolution: ChartDataPoint[] }> {
+): Promise<{ winsEvolution: ChartDataPoint[] }> {
   if (!uid) throw new Error("uid obrigatório");
   const { start } = toDateRange(period);
   const myTeam = await getMyTeam(uid);
-  if (!myTeam) return { winsEvolution: [], scoreEvolution: [] };
+  if (!myTeam) return { winsEvolution: [] };
 
-  const snap1 = await get(
-    query(ref(db, "doublesMatches"), orderByChild("team1Id"), equalTo(myTeam.id))
-  );
-  const snap2 = await get(
-    query(ref(db, "doublesMatches"), orderByChild("team2Id"), equalTo(myTeam.id))
-  );
+  const byMonth = new Map<string, { wins: number }>();
 
-  const byMonth = new Map<string, { wins: number; score: number }>();
-
-  snap1.forEach((child) => {
-    const d = child.val() as DoublesMatchData;
-    const date = new Date(d.date);
-    if (date < start) return;
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const entry = byMonth.get(key) || { wins: 0, score: 0 };
-    if (d.result === "win") entry.wins++;
-    entry.score += d.score1 || 0;
-    byMonth.set(key, entry);
+  const matches = await getTeamMatches({
+    name: myTeam.name,
+    player1Id: myTeam.player1.id,
+    player2Id: myTeam.player2.id,
+    club: myTeam.club,
+    city: myTeam.city,
   });
 
-  snap2.forEach((child) => {
-    const d = child.val() as DoublesMatchData;
-    const date = new Date(d.date);
-    if (date < start) return;
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const entry = byMonth.get(key) || { wins: 0, score: 0 };
-    if (d.result === "loss") entry.wins++;
-    entry.score += d.score2 || 0;
+  for (const match of matches) {
+    const dateValue = getMatchDateValue(match.data);
+    const date = dateValue ? new Date(dateValue) : null;
+    if (!date || Number.isNaN(date.getTime()) || date < start) continue;
+    const key = getBucketKey(date, period);
+    const entry = byMonth.get(key) || { wins: 0 };
+    if (match.side === match.data.winningTeam) entry.wins++;
     byMonth.set(key, entry);
-  });
+  }
 
   const sorted = Array.from(byMonth.entries()).sort(([a], [b]) => a.localeCompare(b));
-  let score = 0;
 
   return {
-    winsEvolution: sorted.map(([k, v]) => ({ date: k + "-01", value: v.wins })),
-    scoreEvolution: sorted.map(([k, v]) => { score += v.score; return { date: k + "-01", value: score }; }),
+    winsEvolution: sorted.map(([k, v]) => ({ date: k.length === 10 ? k : `${k}-01`, value: v.wins })),
   };
 }
 
@@ -470,9 +513,9 @@ export async function getAvailablePlayers(
       avatar: p.data.avatar || "",
       city,
       club: p.data.club || "",
-      score: p.data.score || 0,
       ranking: 0,
       winRate: total > 0 ? wins / total : 0,
+      wins,
       totalMatches: total,
       inTeam: inTeamIds.has(p.id),
     });

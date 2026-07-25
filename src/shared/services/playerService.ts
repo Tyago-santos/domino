@@ -1,18 +1,16 @@
 import {
   ref,
   get,
-  query,
-  orderByChild,
-  equalTo,
 } from "firebase/database";
 import { db } from "../config/firestore";
 import type {
   Player,
   Match,
+  MatchPlayer,
   RankingEntry,
-  Achievement,
   Stats,
   ChartDataPoint,
+  MatchMode,
   PeriodFilter,
 } from "../types";
 
@@ -41,6 +39,155 @@ function toDateRange(period?: PeriodFilter): { start: Date; end: Date } {
   return { start, end };
 }
 
+function getBucketKey(date: Date, period?: PeriodFilter): string {
+  const useDailyBuckets = period === "today" || period === "7days" || period === "30days";
+  if (useDailyBuckets) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  }
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function sortMatchesDesc(matches: Match[]): Match[] {
+  return matches.sort((a, b) => {
+    const dateA = `${a.date}T${a.time || "00:00"}`;
+    const dateB = `${b.date}T${b.time || "00:00"}`;
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
+}
+
+function matchSignature(match: Match): string {
+  return [
+    match.date,
+    match.time,
+    match.opponent,
+    match.partner,
+    match.result,
+    match.duration,
+    match.tournament || "",
+  ].join("|");
+}
+
+type MatchRecord = Record<string, any>;
+type GameMatchRecord = MatchRecord & {
+  players: MatchPlayer[];
+  createdAt: string;
+  createdBy: string;
+  createdByName: string;
+};
+
+function isGameMatchRecord(data: MatchRecord): data is GameMatchRecord {
+  return Array.isArray(data.players);
+}
+
+function buildMatchFromGameRecord(uid: string, id: string, data: MatchRecord): Match[] {
+  if (!isGameMatchRecord(data)) return [];
+
+  const players = data.players ?? [];
+  const player = players.find((item) => item.id === uid);
+  if (!player) return [];
+
+  const date = typeof data.endedAt === "string"
+    ? data.endedAt
+    : typeof data.createdAt === "string"
+      ? data.createdAt
+      : "";
+  const normalizedDate = date.split("T")[0] || "";
+  const normalizedTime = date.split("T")[1]?.substring(0, 5) || "";
+
+  if (data.mode === "individual") {
+    const winnerId = typeof data.winnerId === "string" ? data.winnerId : "";
+    const opponentNames = players
+      .filter((item) => item.id !== uid)
+      .map((item) => item.name);
+
+    return [
+      {
+        id,
+        date: normalizedDate,
+        time: normalizedTime,
+        mode: "individual",
+        opponent: opponentNames.join(" x "),
+        partner: "",
+        result: winnerId === uid ? "win" : "loss",
+        duration: typeof data.duration === "number" ? data.duration : 0,
+        tournament: typeof data.tournament === "string" ? data.tournament : "",
+      },
+    ];
+  }
+
+  const teamAIds = new Set((data.teamA?.playerIds ?? []) as string[]);
+  const teamBIds = new Set((data.teamB?.playerIds ?? []) as string[]);
+  const isTeamA = teamAIds.has(uid);
+  const isTeamB = teamBIds.has(uid);
+  if (!isTeamA && !isTeamB) return [];
+
+  const partnerId = Array.from(isTeamA ? teamAIds : teamBIds).find((item) => item !== uid);
+  const partner = players.find((item) => item.id === partnerId);
+  const opponentTeam = isTeamA ? data.teamB : data.teamA;
+
+  return [
+    {
+      id,
+      date: normalizedDate,
+      time: normalizedTime,
+      mode: "doubles",
+      opponent: opponentTeam?.name || "Equipe adversária",
+      partner: partner?.nickname || partner?.name || "",
+      result:
+        (data.winningTeam === "A" && isTeamA) || (data.winningTeam === "B" && isTeamB)
+          ? "win"
+          : "loss",
+      duration: typeof data.duration === "number" ? data.duration : 0,
+      tournament: typeof data.tournament === "string" ? data.tournament : "",
+    },
+  ];
+}
+
+function buildMatchFromPlayerRecord(uid: string, id: string, data: MatchRecord): Match[] {
+  const playerId = typeof data.playerId === "string" ? data.playerId : "";
+  if (playerId !== uid) return [];
+
+  return [
+    {
+      id,
+      date: typeof data.date === "string" ? data.date.split("T")[0] || "" : "",
+      time: typeof data.date === "string" ? data.date.split("T")[1]?.substring(0, 5) || "" : "",
+      mode: (data.mode as MatchMode) || "individual",
+      opponent: typeof data.opponent === "string" ? data.opponent : "",
+      partner: typeof data.partner === "string" ? data.partner : "",
+      result: data.result === "loss" ? "loss" : "win",
+      duration: typeof data.duration === "number" ? data.duration : 0,
+      tournament: typeof data.tournament === "string" ? data.tournament : "",
+    },
+  ];
+}
+
+async function getCombinedPlayerHistory(uid: string): Promise<Match[]> {
+  const matchesSnap = await get(ref(db, "matches"));
+
+  const matches: Match[] = [];
+  const seen = new Set<string>();
+
+  matchesSnap.forEach((child) => {
+    const data = child.val() as MatchRecord;
+    const fromGame = buildMatchFromGameRecord(uid, child.key!, data);
+    const fromPlayer = buildMatchFromPlayerRecord(uid, child.key!, data);
+    for (const match of [...fromGame, ...fromPlayer]) {
+      const signature = matchSignature(match);
+      if (seen.has(signature)) continue;
+      seen.add(signature);
+      matches.push(match);
+    }
+  });
+
+  return sortMatchesDesc(matches);
+}
+
+async function getPlayerRankingPosition(uid: string): Promise<number> {
+  const ranking = await getRanking();
+  return ranking.find((entry) => entry.playerId === uid)?.position || 0;
+}
+
 interface PlayerData {
   name: string;
   nickname: string;
@@ -51,19 +198,6 @@ interface PlayerData {
   category: string;
   bio?: string;
   registrationDate?: string;
-  score?: number;
-}
-
-interface MatchData {
-  playerId: string;
-  date: string;
-  opponent?: string;
-  partner?: string;
-  result: "win" | "loss" | "draw";
-  score: number;
-  scoreConceded: number;
-  duration: number;
-  tournament?: string;
 }
 
 export async function getPlayer(uid?: string): Promise<Player> {
@@ -72,34 +206,22 @@ export async function getPlayer(uid?: string): Promise<Player> {
   if (!playerSnap.exists()) throw new Error("Jogador não encontrado");
   const d = playerSnap.val() as PlayerData;
 
-  const matchesSnap = await get(
-    query(ref(db, "matches"), orderByChild("playerId"), equalTo(uid))
-  );
+  const matchEntries = await getCombinedPlayerHistory(uid);
   let wins = 0;
   let losses = 0;
-  let draws = 0;
-  let totalScore = 0;
-  let totalScoreConceded = 0;
   let totalDuration = 0;
   let bestStreak = 0;
   let streak = 0;
 
-  const matchEntries: MatchData[] = [];
-  matchesSnap.forEach((child) => {
-    matchEntries.push(child.val() as MatchData);
-  });
-  matchEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
   for (const m of matchEntries) {
     if (m.result === "win") { wins++; streak++; if (streak > bestStreak) bestStreak = streak; }
-    else if (m.result === "loss") { losses++; streak = 0; }
-    else { draws++; streak = 0; }
-    totalScore += m.score;
-    totalScoreConceded += m.scoreConceded;
+    else { losses++; streak = 0; }
     totalDuration += m.duration;
   }
 
-  const totalMatches = wins + losses + draws;
+  const totalMatches = wins + losses;
+
+  const ranking = await getPlayerRankingPosition(uid);
 
   return {
     id: uid,
@@ -112,8 +234,7 @@ export async function getPlayer(uid?: string): Promise<Player> {
     category: d.category,
     bio: d.bio || "",
     registrationDate: d.registrationDate || "",
-    ranking: 0,
-    score: d.score || 0,
+    ranking,
     totalMatches,
     wins,
     losses,
@@ -129,15 +250,12 @@ export async function getPlayerStats(uid?: string): Promise<Stats> {
   const player = await getPlayer(uid);
   return {
     ranking: player.ranking,
-    score: player.score,
     totalMatches: player.totalMatches,
     wins: player.wins,
     losses: player.losses,
     winRate: player.winRate,
     currentStreak: player.currentStreak,
     bestStreak: player.bestStreak,
-    avgScore: player.totalMatches > 0 ? Math.round((player.wins * 178 + player.losses * 120) / player.totalMatches) : 0,
-    avgScoreConceded: player.totalMatches > 0 ? Math.round((player.wins * 120 + player.losses * 178) / player.totalMatches) : 0,
     avgMatchDuration: player.avgMatchDuration,
   };
 }
@@ -145,35 +263,14 @@ export async function getPlayerStats(uid?: string): Promise<Stats> {
 export async function getMatchHistory(
   uid?: string,
   filters?: {
-    result?: "win" | "loss" | "draw";
+    result?: "win" | "loss";
     period?: PeriodFilter;
     page?: number;
     pageSize?: number;
   }
 ): Promise<{ matches: Match[]; total: number; page: number; pageSize: number; totalPages: number }> {
   if (!uid) throw new Error("uid obrigatório");
-  const matchesSnap = await get(
-    query(ref(db, "matches"), orderByChild("playerId"), equalTo(uid))
-  );
-
-  let matches: Match[] = [];
-  matchesSnap.forEach((child) => {
-    const data = child.val() as MatchData;
-    matches.push({
-      id: child.key!,
-      date: data.date?.split("T")[0] || "",
-      time: data.date?.split("T")[1]?.substring(0, 5) || "",
-      opponent: data.opponent || "",
-      partner: data.partner || "",
-      result: data.result,
-      score: data.score,
-      scoreConceded: data.scoreConceded,
-      duration: data.duration,
-      tournament: data.tournament || "",
-    });
-  });
-
-  matches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  let matches = await getCombinedPlayerHistory(uid);
 
   if (filters?.result) matches = matches.filter((m) => m.result === filters.result);
   if (filters?.period) {
@@ -200,13 +297,10 @@ export async function getRanking(): Promise<RankingEntry[]> {
   });
 
   for (const p of playerList) {
-    const matchesSnap = await get(
-      query(ref(db, "matches"), orderByChild("playerId"), equalTo(p.id))
-    );
+    const matches = await getCombinedPlayerHistory(p.id);
     let wins = 0;
     let losses = 0;
-    matchesSnap.forEach((child) => {
-      const m = child.val() as MatchData;
+    matches.forEach((m) => {
       if (m.result === "win") wins++;
       else if (m.result === "loss") losses++;
     });
@@ -218,7 +312,6 @@ export async function getRanking(): Promise<RankingEntry[]> {
       avatar: p.data.avatar || "",
       city: p.data.city || "",
       club: p.data.club || "",
-      score: p.data.score || 0,
       winRate: total > 0 ? wins / total : 0,
       wins,
       losses,
@@ -226,7 +319,7 @@ export async function getRanking(): Promise<RankingEntry[]> {
     });
   }
 
-  entries.sort((a, b) => b.score - a.score);
+  entries.sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
   entries.forEach((e, i) => {
     e.position = i + 1;
   });
@@ -234,42 +327,8 @@ export async function getRanking(): Promise<RankingEntry[]> {
   return entries;
 }
 
-export async function getTournaments(): Promise<Achievement[]> {
+export async function getTournaments(): Promise<unknown[]> {
   return [];
-}
-
-export async function getAchievements(uid?: string): Promise<Achievement[]> {
-  if (!uid) throw new Error("uid obrigatório");
-  const defsSnap = await get(ref(db, "achievements"));
-  const playerAchSnap = await get(
-    query(ref(db, "playerAchievements"), orderByChild("playerId"), equalTo(uid))
-  );
-
-  const defsList: { id: string; name: string; description: string; icon: string; maxProgress: number }[] = [];
-  defsSnap.forEach((child) => {
-    const d = child.val();
-    defsList.push({ id: child.key!, name: d.name, description: d.description, icon: d.icon, maxProgress: d.maxProgress });
-  });
-
-  const playerAchMap = new Map<number, { progress: number; unlocked: boolean }>();
-  playerAchSnap.forEach((child) => {
-    const d = child.val();
-    playerAchMap.set(d.achievementIndex, { progress: d.progress, unlocked: d.unlocked });
-  });
-
-  return defsList.map((def, i) => {
-    const playerAch = playerAchMap.get(i);
-    return {
-      id: def.id,
-      name: def.name,
-      description: def.description,
-      icon: def.icon,
-      date: playerAch?.unlocked ? new Date().toISOString() : undefined,
-      progress: playerAch?.progress || 0,
-      maxProgress: def.maxProgress,
-      unlocked: playerAch?.unlocked || false,
-    };
-  });
 }
 
 export async function getChartData(
@@ -277,59 +336,48 @@ export async function getChartData(
   period: PeriodFilter = "30days"
 ): Promise<{
   rankingEvolution: ChartDataPoint[];
-  scoreEvolution: ChartDataPoint[];
   winsPerPeriod: ChartDataPoint[];
   matchesPerPeriod: ChartDataPoint[];
 }> {
   if (!uid) throw new Error("uid obrigatório");
   const { start } = toDateRange(period);
-  const matchesSnap = await get(
-    query(ref(db, "matches"), orderByChild("playerId"), equalTo(uid))
-  );
+  const matches = await getCombinedPlayerHistory(uid);
 
-  const byMonth = new Map<string, { wins: number; total: number; score: number; ranking: number }>();
+  const byMonth = new Map<string, { wins: number; total: number; ranking: number }>();
 
-  matchesSnap.forEach((child) => {
-    const d = child.val() as MatchData;
-    const date = new Date(d.date);
+  matches.forEach((d) => {
+    const date = new Date(`${d.date}T${d.time || "00:00"}`);
     if (date < start) return;
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const entry = byMonth.get(key) || { wins: 0, total: 0, score: 0, ranking: 10 };
+    const key = getBucketKey(date, period);
+    const entry = byMonth.get(key) || { wins: 0, total: 0, ranking: 10 };
     entry.total++;
     if (d.result === "win") entry.wins++;
-    entry.score += d.score || 0;
     byMonth.set(key, entry);
   });
 
   const sorted = Array.from(byMonth.entries()).sort(([a], [b]) => a.localeCompare(b));
-  let rank = 10;
-  let score = 0;
 
   const rankingEvolution: ChartDataPoint[] = [];
-  const scoreEvolution: ChartDataPoint[] = [];
   const winsPerPeriod: ChartDataPoint[] = [];
   const matchesPerPeriod: ChartDataPoint[] = [];
+  let rank = 10;
 
   for (const [key, data] of sorted) {
+    const date = key.length === 10 ? key : `${key}-01`;
     rank = Math.max(1, rank - (data.wins > data.total / 2 ? 1 : 0));
-    score += data.score;
-    rankingEvolution.push({ date: key + "-01", value: rank });
-    scoreEvolution.push({ date: key + "-01", value: score });
-    winsPerPeriod.push({ date: key + "-01", value: data.wins });
-    matchesPerPeriod.push({ date: key + "-01", value: data.total });
+    rankingEvolution.push({ date, value: rank });
+    winsPerPeriod.push({ date, value: data.wins });
+    matchesPerPeriod.push({ date, value: data.total });
   }
 
-  return { rankingEvolution, scoreEvolution, winsPerPeriod, matchesPerPeriod };
+  return { rankingEvolution, winsPerPeriod, matchesPerPeriod };
 }
 
-export async function getRankingEvolution(uid?: string): Promise<ChartDataPoint[]> {
+export async function getRankingEvolution(
+  uid?: string,
+  period: PeriodFilter = "year"
+): Promise<ChartDataPoint[]> {
   if (!uid) throw new Error("uid obrigatório");
-  const data = await getChartData(uid, "year");
+  const data = await getChartData(uid, period);
   return data.rankingEvolution;
-}
-
-export async function getScoreEvolution(uid?: string): Promise<ChartDataPoint[]> {
-  if (!uid) throw new Error("uid obrigatório");
-  const data = await getChartData(uid, "year");
-  return data.scoreEvolution;
 }

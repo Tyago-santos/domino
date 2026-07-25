@@ -27,8 +27,6 @@ function resultBadge(result: MatchResult) {
       return <Badge variant="success">Vitória</Badge>;
     case "loss":
       return <Badge variant="destructive">Derrota</Badge>;
-    case "draw":
-      return <Badge variant="warning">Empate</Badge>;
   }
 }
 
@@ -79,36 +77,35 @@ export function RecentMatchesTable() {
     { value: "all", label: "Todos" },
     { value: "win", label: "Vitórias" },
     { value: "loss", label: "Derrotas" },
-    { value: "draw", label: "Empates" },
   ];
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-lg">Últimas Partidas</CardTitle>
-        <span className="text-sm text-text-muted dark:text-text-muted">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 py-2.5 sm:px-6 sm:py-4">
+        <CardTitle className="text-[11px] font-bold sm:text-lg">Últimas Partidas</CardTitle>
+        <span className="text-[9px] text-text-muted dark:text-text-muted sm:text-sm">
           {data.total} partida{data.total !== 1 ? "s" : ""}
         </span>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <CardContent className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted sm:left-3 sm:h-4 sm:w-4" />
             <input
               type="text"
               placeholder="Buscar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-surface-border bg-surface pl-10 pr-3 py-2 text-sm text-text placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-surface-border dark:bg-surface dark:text-text"
+              className="flex h-9 w-full rounded-md border border-surface-border bg-surface pl-8 pr-3 py-1.5 text-[10px] text-text placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-surface-border dark:bg-surface dark:text-text sm:h-10 sm:pl-10 sm:py-2 sm:text-sm"
             />
           </div>
-          <div className="flex flex-wrap items-center gap-1">
-            <Filter className="mr-1 h-4 w-4 text-text-muted" />
+          <div className="flex flex-wrap items-center gap-0.5 sm:gap-1">
+            <Filter className="mr-0.5 h-3 w-3 text-text-muted sm:mr-1 sm:h-4 sm:w-4" />
             {filterButtons.map((btn) => (
               <button
                 key={btn.value}
                 onClick={() => setResultFilter(btn.value)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`rounded-md px-2 py-1 text-[9px] font-medium transition-all sm:px-3 sm:py-1.5 sm:text-xs ${
                   resultFilter === btn.value
                     ? "bg-emerald-600 text-white dark:bg-emerald-500"
                     : "text-text-muted hover:bg-surface-muted hover:text-text dark:text-text-muted dark:hover:bg-surface-muted dark:hover:text-text"
@@ -135,7 +132,6 @@ export function RecentMatchesTable() {
                     <th className="h-10 px-4 text-left font-medium text-text-muted dark:text-text-muted">Adversário</th>
                     <th className="h-10 hidden md:table-cell px-4 text-left font-medium text-text-muted dark:text-text-muted">Parceiro</th>
                     <th className="h-10 px-4 text-left font-medium text-text-muted dark:text-text-muted">Resultado</th>
-                    <th className="h-10 px-4 text-right font-medium text-text-muted dark:text-text-muted">Pontuação</th>
                     <th className="h-10 hidden lg:table-cell px-4 text-right font-medium text-text-muted dark:text-text-muted">Duração</th>
                     <th className="h-10 hidden lg:table-cell px-4 text-left font-medium text-text-muted dark:text-text-muted">Campeonato</th>
                   </tr>
@@ -152,7 +148,6 @@ export function RecentMatchesTable() {
                       <td className="px-4 py-3 font-medium text-text dark:text-text">{match.opponent}</td>
                       <td className="hidden md:table-cell px-4 py-3 text-text dark:text-text">{match.partner}</td>
                       <td className="px-4 py-3">{resultBadge(match.result)}</td>
-                      <td className="px-4 py-3 text-right font-medium text-text dark:text-text">{match.score} x {match.scoreConceded}</td>
                       <td className="hidden lg:table-cell px-4 py-3 text-right text-text-muted dark:text-text-muted">{formatDuration(match.duration)}</td>
                       <td className="hidden lg:table-cell px-4 py-3 text-text-muted dark:text-text-muted">{match.tournament || "-"}</td>
                     </tr>
@@ -177,16 +172,11 @@ export function RecentMatchesTable() {
                   <p className="text-sm font-medium text-text dark:text-text">
                     {match.opponent}
                   </p>
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="text-sm font-bold text-text dark:text-text">
-                      {match.score} x {match.scoreConceded}
-                    </span>
-                    {match.tournament && (
-                      <span className="text-xs text-text-muted dark:text-text-muted truncate max-w-[140px]">
-                        {match.tournament}
-                      </span>
-                    )}
-                  </div>
+                  {match.tournament && (
+                    <p className="mt-1 text-xs text-text-muted dark:text-text-muted truncate">
+                      {match.tournament}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

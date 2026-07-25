@@ -1,9 +1,10 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 const DashboardPage = lazy(
   () => import("../features/dashboard/DashboardPage")
@@ -129,6 +130,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/" replace />,
+    element: <NotFoundPage />,
   },
 ]);

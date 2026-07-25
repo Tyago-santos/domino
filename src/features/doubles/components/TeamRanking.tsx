@@ -60,7 +60,7 @@ export function TeamRanking({ teams, myTeamId, isLoading }: TeamRankingProps) {
               <th className="px-4 py-3 text-left font-medium text-text-muted dark:text-text-muted">Dupla</th>
               <th className="hidden px-4 py-3 text-left font-medium text-text-muted dark:text-text-muted md:table-cell">Jogadores</th>
               <th className="hidden px-4 py-3 text-left font-medium text-text-muted dark:text-text-muted md:table-cell">Clube</th>
-              <th className="px-4 py-3 text-right font-medium text-text-muted dark:text-text-muted">Pontos</th>
+              <th className="px-4 py-3 text-right font-medium text-text-muted dark:text-text-muted">Vitórias</th>
               <th className="hidden px-4 py-3 text-left font-medium text-text-muted dark:text-text-muted lg:table-cell">Vitórias</th>
               <th className="hidden px-4 py-3 text-center font-medium text-text-muted dark:text-text-muted lg:table-cell">Sequência</th>
             </tr>
@@ -112,7 +112,7 @@ export function TeamRanking({ teams, myTeamId, isLoading }: TeamRankingProps) {
                   </td>
                   <td className="hidden px-4 py-3 text-text-muted dark:text-text-muted md:table-cell">{team.club}</td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{team.score.toLocaleString("pt-BR")}</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{team.wins}</span>
                   </td>
                   <td className="hidden px-4 py-3 lg:table-cell">
                     <div className="flex items-center gap-2">
@@ -176,7 +176,7 @@ export function TeamRanking({ teams, myTeamId, isLoading }: TeamRankingProps) {
                   </div>
                 </div>
                 <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                  {team.score.toLocaleString("pt-BR")}
+                  {team.wins}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs text-text-muted dark:text-text-muted">

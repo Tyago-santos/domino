@@ -34,7 +34,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 }
 
 export function RankingEvolutionStats({ period: _period }: RankingEvolutionStatsProps) {
-  const { data, isLoading } = useRankingEvolution();
+  const { data, isLoading } = useRankingEvolution(_period);
 
   if (isLoading) {
     return (
@@ -56,22 +56,22 @@ export function RankingEvolutionStats({ period: _period }: RankingEvolutionStats
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Evolução do Ranking</CardTitle>
+      <CardHeader className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <CardTitle className="text-[11px] font-bold sm:text-lg">Evolução do Ranking</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
+      <CardContent className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatDate}
-                tick={{ fontSize: 12, fill: "#64748b" }}
+                tick={{ fontSize: 10, fill: "#64748b" }}
               />
               <YAxis
                 reversed
-                tick={{ fontSize: 12, fill: "#64748b" }}
+                tick={{ fontSize: 10, fill: "#64748b" }}
                 domain={[1, "auto"]}
                 tickFormatter={(v: number) => `${v}º`}
               />

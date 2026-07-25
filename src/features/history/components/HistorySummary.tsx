@@ -3,7 +3,6 @@ import {
   Trophy,
   TrendingUp,
   TrendingDown,
-  Minus,
   Target,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui";
@@ -49,13 +48,6 @@ export function HistorySummary({ summary }: HistorySummaryProps) {
       value: summary.losses,
       icon: TrendingDown,
       color: "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400",
-    },
-    {
-      label: "Empates",
-      value: summary.draws,
-      icon: Minus,
-      color:
-        "bg-surface-muted text-text-muted dark:bg-surface-muted dark:text-text-muted",
     },
     {
       label: "Taxa de Vitória",

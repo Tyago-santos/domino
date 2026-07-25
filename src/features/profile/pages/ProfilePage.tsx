@@ -1,12 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { User, BarChart3, Award, History } from "lucide-react";
+import { User, BarChart3, History } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { usePlayer, usePlayerStats } from "../hooks/useProfile";
 import { ProfileHeader } from "../components/ProfileHeader";
 import { ProfileStats } from "../components/ProfileStats";
-import { ProfileAchievements } from "../components/ProfileAchievements";
 import { ProfileBio } from "../components/ProfileBio";
 
 const tabContentVariants = {
@@ -120,10 +119,6 @@ export function ProfilePage() {
             <BarChart3 className="mr-1.5 h-4 w-4" />
             Estatísticas
           </TabsTrigger>
-          <TabsTrigger value="achievements">
-            <Award className="mr-1.5 h-4 w-4" />
-            Conquistas
-          </TabsTrigger>
           <TabsTrigger value="history">
             <History className="mr-1.5 h-4 w-4" />
             Histórico
@@ -187,22 +182,11 @@ export function ProfilePage() {
                 </Card>
               )}
 
-              <ProfileAchievements />
             </motion.div>
           </TabsContent>
 
           <TabsContent value="stats">
             <ProfileStats stats={stats} isLoading={statsLoading} />
-          </TabsContent>
-
-          <TabsContent value="achievements">
-            <motion.div
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <ProfileAchievements />
-            </motion.div>
           </TabsContent>
 
           <TabsContent value="history">

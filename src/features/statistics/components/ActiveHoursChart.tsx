@@ -57,23 +57,23 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 export function ActiveHoursChart() {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Horários Mais Ativos</CardTitle>
+      <CardHeader className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <CardTitle className="text-[11px] font-bold sm:text-lg">Horários Mais Ativos</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
+      <CardContent className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={HOURS_DATA}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, fill: "#64748b" }}
+                tick={{ fontSize: 9, fill: "#64748b" }}
                 interval={0}
                 angle={-45}
                 textAnchor="end"
-                height={50}
+                height={40}
               />
-              <YAxis tick={{ fontSize: 12, fill: "#64748b" }} />
+              <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={30}>
                 {HOURS_DATA.map((entry, index) => (

@@ -39,20 +39,6 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Conquistas - autenticado pode ler e criar
-    match /achievements/{achievementId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if false;
-    }
-
-    // Conquistas do jogador - autenticado pode ler e criar
-    match /playerAchievements/{docId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if false;
-    }
-
     // Convites de dupla - autenticado pode ler e escrever
     match /teamInvitations/{docId} {
       allow read: if request.auth != null;

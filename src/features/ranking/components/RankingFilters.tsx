@@ -34,19 +34,19 @@ export function RankingFilters({
   ];
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
       <div className="flex-1">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted sm:left-3 sm:h-4 sm:w-4" />
           <Input
-            placeholder="Buscar por nome..."
+            placeholder="Buscar..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9"
+            className="pl-8 text-[10px] sm:pl-9 sm:text-sm"
           />
         </div>
       </div>
-      <div className="flex flex-col gap-4 sm:flex-row">
+      <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
         <div className="w-full sm:w-48">
           <Select
             options={cityOptions}

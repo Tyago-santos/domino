@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, MapPin, Building2, Flame, Trophy, Star, UserPlus } from "lucide-react";
+import { Users, MapPin, Building2, Flame, Trophy, Star, UserPlus, AlertTriangle } from "lucide-react";
 import { Card, Avatar, Button, Skeleton } from "@/components/ui";
-import { useMyTeam } from "../hooks/useDoubles";
+import { useMyTeam, useDeleteTeam } from "../hooks/useDoubles";
 import { FormTeamModal } from "./FormTeamModal";
 
 const containerVariants = {
@@ -75,7 +75,9 @@ function TeamSectionSkeleton() {
 
 export function MyTeamSection() {
   const { data: team, isLoading, error } = useMyTeam();
+  const deleteTeamMutation = useDeleteTeam();
   const [showFormModal, setShowFormModal] = useState(false);
+  const [showDissolveConfirm, setShowDissolveConfirm] = useState(false);
 
   if (isLoading) return <TeamSectionSkeleton />;
 
@@ -166,9 +168,9 @@ export function MyTeamSection() {
                 <div className="rounded-lg bg-surface-muted p-3 text-center dark:bg-surface-muted">
                   <p className="flex items-center justify-center gap-1 text-lg font-bold text-emerald-600 dark:text-emerald-400">
                     <Star className="h-4 w-4" />
-                    {player.score.toLocaleString("pt-BR")}
+                    {player.wins}
                   </p>
-                  <p className="text-[10px] text-text-muted dark:text-text-muted">Pontos</p>
+                  <p className="text-[10px] text-text-muted dark:text-text-muted">Vitórias</p>
                 </div>
                 <div className="rounded-lg bg-surface-muted p-3 text-center dark:bg-surface-muted">
                   <p className="flex items-center justify-center gap-1 text-lg font-bold text-text dark:text-text">
@@ -225,6 +227,64 @@ export function MyTeamSection() {
           </div>
         </Card>
       </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Button
+          variant="outline"
+          className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+          onClick={() => setShowDissolveConfirm(true)}
+        >
+          <AlertTriangle className="mr-2 h-4 w-4" />
+          Desfazer Dupla
+        </Button>
+      </motion.div>
+
+      {showDissolveConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-text dark:text-text">Desfazer Dupla</h3>
+                <p className="text-xs text-text-muted dark:text-text-muted">Esta ação não pode ser desfeita</p>
+              </div>
+            </div>
+            <p className="mb-6 text-sm text-text-muted dark:text-text-muted">
+              Tem certeza que deseja desfazer a dupla <strong>{team.name}</strong>?
+              Todos os dados de partidas da dupla serão preservados, mas a dupla será removida do ranking.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowDissolveConfirm(false)}
+                disabled={deleteTeamMutation.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1 bg-red-600 text-white hover:bg-red-700"
+                onClick={() => {
+                  deleteTeamMutation.mutate(undefined, {
+                    onSuccess: () => setShowDissolveConfirm(false),
+                  });
+                }}
+                disabled={deleteTeamMutation.isPending}
+              >
+                {deleteTeamMutation.isPending ? "Desfazendo..." : "Desfazer"}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      <FormTeamModal open={showFormModal} onClose={() => setShowFormModal(false)} />
     </motion.div>
   );
 }

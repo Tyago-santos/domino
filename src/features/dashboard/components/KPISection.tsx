@@ -5,7 +5,6 @@ import {
   Target,
   Percent,
   Medal,
-  Star,
   Flame,
   Clock,
   TrendingUp,
@@ -32,7 +31,7 @@ const item = {
 function KPISkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-      {Array.from({ length: 9 }).map((_, i) => (
+      {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
           className="flex flex-col gap-3 rounded-lg border border-surface-border bg-surface p-6"
@@ -87,11 +86,6 @@ export function KPISection() {
       icon: <Medal className="h-5 w-5" />,
       label: "Ranking",
       value: `#${stats.ranking}`,
-    },
-    {
-      icon: <Star className="h-5 w-5" />,
-      label: "Pontuação",
-      value: stats.score.toLocaleString("pt-BR"),
     },
     {
       icon: <Flame className="h-5 w-5" />,

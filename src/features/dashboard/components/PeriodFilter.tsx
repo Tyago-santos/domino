@@ -20,7 +20,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-1 rounded-lg border border-surface-border bg-surface p-1",
+        "flex flex-wrap items-center gap-0.5 rounded-lg border border-surface-border bg-surface p-0.5 sm:gap-1 sm:p-1",
         "dark:border-surface-border dark:bg-surface",
         className
       )}
@@ -30,7 +30,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
           key={period.value}
           onClick={() => onChange(period.value)}
           className={cn(
-            "rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200",
+            "rounded-md px-2 py-1 text-[9px] font-medium transition-all duration-200 sm:px-3 sm:py-1.5 sm:text-sm",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
             value === period.value
               ? "bg-emerald-600 text-white shadow-sm dark:bg-emerald-500"

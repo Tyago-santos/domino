@@ -10,6 +10,7 @@ import {
   createTeam,
   sendInvitation,
   getInvitations,
+  deleteTeam,
 } from "@/shared/services/doublesService";
 import { useAuth } from "@/app/providers/AuthProvider";
 import type { PeriodFilter } from "@/shared/types";
@@ -47,7 +48,7 @@ export function useDoublesStats() {
 
 export function useDoublesMatchHistory(
   filters?: {
-    result?: "win" | "loss" | "draw";
+    result?: "win" | "loss";
     period?: PeriodFilter;
     page?: number;
     pageSize?: number;
@@ -134,5 +135,22 @@ export function useInvitations() {
     queryFn: () => getInvitations(user!.uid),
     enabled: !!user?.uid,
     staleTime: 30 * 1000,
+  });
+}
+
+export function useDeleteTeam() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: () => deleteTeam(user!.uid),
+    onSuccess: () => {
+      queryClient.setQueryData(["doubles", "myTeam", user?.uid], null);
+      queryClient.invalidateQueries({ queryKey: ["doubles", "teams"] });
+      toast.success("Dupla desfeita com sucesso!");
+    },
+    onError: () => {
+      toast.error("Erro ao desfazer dupla. Tente novamente.");
+    },
   });
 }

@@ -19,6 +19,20 @@ export function ActiveMatchCard({ match }: ActiveMatchCardProps) {
     ? Math.floor((Date.now() - new Date(match.startedAt).getTime()) / 1000)
     : 0;
 
+  const statusLabel =
+    match.status === "in_progress"
+      ? "Em andamento"
+      : match.status === "finished"
+        ? "Finalizada"
+        : "Aguardando início";
+
+  const statusVariant =
+    match.status === "in_progress"
+      ? "success"
+      : match.status === "finished"
+        ? "secondary"
+        : "warning";
+
   return (
     <motion.div
       whileHover={{ y: -2, scale: 1.01 }}
@@ -40,7 +54,7 @@ export function ActiveMatchCard({ match }: ActiveMatchCardProps) {
         <div className="mt-1 flex items-center gap-3 text-xs text-text-muted">
           <span className="flex items-center gap-1">
             <Users className="h-3 w-3" />
-            {match.players.length} jogadores
+            {(match.players ?? []).length} jogadores
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
@@ -50,13 +64,13 @@ export function ActiveMatchCard({ match }: ActiveMatchCardProps) {
       </div>
 
       <div className="flex -space-x-2">
-        {match.players.slice(0, 4).map((p) => (
+        {(match.players ?? []).slice(0, 4).map((p) => (
           <Avatar key={p.id} size="sm" src={p.avatar} fallback={p.name} className="border-2 border-surface" />
         ))}
       </div>
 
-      <Badge variant={match.status === "in_progress" ? "success" : "warning"} className="shrink-0">
-        {match.status === "in_progress" ? "Em andamento" : "Aguardando"}
+      <Badge variant={statusVariant} className="shrink-0">
+        {statusLabel}
       </Badge>
     </motion.div>
   );

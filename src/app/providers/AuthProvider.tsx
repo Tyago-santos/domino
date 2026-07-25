@@ -104,7 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       category: "Iniciante",
       bio: "",
       registrationDate: new Date().toISOString(),
-      score: 1000,
       createdAt: new Date().toISOString(),
     }).catch(() => {});
   }, []);

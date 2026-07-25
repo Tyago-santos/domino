@@ -27,28 +27,28 @@ export default function SettingsPage() {
       animate="show"
       className="space-y-6"
     >
-      <motion.div variants={item} className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600 text-white dark:bg-primary-500">
-          <Settings className="h-5 w-5" />
+      <motion.div variants={item} className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white dark:bg-primary-500 sm:h-10 sm:w-10">
+          <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-text dark:text-text">Configurações</h1>
-          <p className="text-sm text-text-muted dark:text-text-muted">Gerencie seu perfil e preferências</p>
+          <h1 className="text-lg font-bold text-text dark:text-text sm:text-2xl">Configurações</h1>
+          <p className="text-[10px] text-text-muted dark:text-text-muted sm:text-sm">Gerencie seu perfil e preferências</p>
         </div>
       </motion.div>
 
       <motion.div variants={item}>
         <Tabs defaultValue="profile">
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="profile">Perfil</TabsTrigger>
-            <TabsTrigger value="appearance">Aparência</TabsTrigger>
-            <TabsTrigger value="notifications">
+          <TabsList className="w-full overflow-x-auto justify-start sm:w-auto">
+            <TabsTrigger value="profile" className="text-[10px] sm:text-sm">Perfil</TabsTrigger>
+            <TabsTrigger value="appearance" className="text-[10px] sm:text-sm">Aparência</TabsTrigger>
+            <TabsTrigger value="notifications" className="text-[10px] sm:text-sm">
               Notificações
-              <Badge variant="default" className="ml-1.5 h-5 px-1.5 text-[10px]">
+              <Badge variant="default" className="ml-1 h-4 px-1 text-[8px] sm:ml-1.5 sm:h-5 sm:px-1.5 sm:text-[10px]">
                 4
               </Badge>
             </TabsTrigger>
-            <TabsTrigger value="account">Conta</TabsTrigger>
+            <TabsTrigger value="account" className="text-[10px] sm:text-sm">Conta</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">

@@ -73,10 +73,10 @@ export function TeamCard({ team, isMyTeam = false }: TeamCardProps) {
           <div className="mb-4 flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2 dark:bg-surface-muted">
             <div className="text-center">
               <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                {team.score.toLocaleString("pt-BR")}
+                {team.wins}
               </p>
               <p className="text-[10px] text-text-muted dark:text-text-muted">
-                Pontos
+                Vitórias
               </p>
             </div>
             <div className="h-8 w-px bg-surface-border dark:bg-surface-border" />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trophy, Users, TrendingUp, Award, UserPlus, Target } from "lucide-react";
+import { Trophy, Users, TrendingUp, UserPlus, Target } from "lucide-react";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui";
 import { cn } from "@/shared/lib/utils";
 
@@ -14,7 +14,6 @@ const notificationOptions: NotificationOption[] = [
   { id: "tournaments", label: "Novos torneios", description: "Receba alertas quando novos torneios forem anunciados.", icon: <Trophy className="h-4 w-4" /> },
   { id: "invitations", label: "Convites", description: "Seja notificado quando receber convites para partidas.", icon: <Users className="h-4 w-4" /> },
   { id: "ranking", label: "Alterações no ranking", description: "Saiba quando sua posição no ranking mudar.", icon: <TrendingUp className="h-4 w-4" /> },
-  { id: "achievements", label: "Conquistas", description: "Celebre ao desbloquear novas conquistas.", icon: <Award className="h-4 w-4" /> },
   { id: "friends", label: "Solicitações de amizade", description: "Receba notificações de novas solicitações.", icon: <UserPlus className="h-4 w-4" /> },
   { id: "results", label: "Resultados das partidas", description: "Acompanhe os resultados das suas partidas.", icon: <Target className="h-4 w-4" /> },
 ];
@@ -52,7 +51,6 @@ export function NotificationSettings() {
     tournaments: true,
     invitations: true,
     ranking: true,
-    achievements: false,
     friends: true,
     results: true,
   });

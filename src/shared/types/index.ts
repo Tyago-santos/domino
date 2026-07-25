@@ -10,7 +10,6 @@ export interface Player {
   bio?: string;
   registrationDate: string;
   ranking: number;
-  score: number;
   totalMatches: number;
   wins: number;
   losses: number;
@@ -24,15 +23,16 @@ export interface Match {
   id: string;
   date: string;
   time: string;
+  mode?: MatchMode;
   opponent: string;
   opponentAvatar?: string;
   partner: string;
   partnerAvatar?: string;
-  result: 'win' | 'loss' | 'draw';
-  score: number;
-  scoreConceded: number;
+  result: 'win' | 'loss';
   duration: number;
   tournament?: string;
+  score?: number;
+  scoreConceded?: number;
 }
 
 export interface Tournament {
@@ -56,35 +56,20 @@ export interface RankingEntry {
   avatar?: string;
   city: string;
   club: string;
-  score: number;
   winRate: number;
   wins: number;
   losses: number;
   trend: 'up' | 'down' | 'stable';
 }
 
-export interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  date?: string;
-  progress: number;
-  maxProgress: number;
-  unlocked: boolean;
-}
-
 export interface Stats {
   ranking: number;
-  score: number;
   totalMatches: number;
   wins: number;
   losses: number;
   winRate: number;
   currentStreak: number;
   bestStreak: number;
-  avgScore: number;
-  avgScoreConceded: number;
   avgMatchDuration: number;
 }
 
@@ -94,7 +79,7 @@ export interface ChartDataPoint {
   label?: string;
 }
 
-export type MatchResult = 'win' | 'loss' | 'draw';
+export type MatchResult = 'win' | 'loss';
 export type Theme = 'light' | 'dark';
 export type PeriodFilter = 'today' | '7days' | '30days' | '90days' | 'year' | 'custom';
 
@@ -104,7 +89,6 @@ export interface Team {
   player1: Player;
   player2: Player;
   avatar?: string;
-  score: number;
   ranking: number;
   totalMatches: number;
   wins: number;
@@ -122,9 +106,8 @@ export interface DoublesMatch {
   time: string;
   team1: { id: string; name: string; avatar?: string };
   team2: { id: string; name: string; avatar?: string };
-  result: 'win' | 'loss' | 'draw';
-  score1: number;
-  score2: number;
+  mySide?: "team1" | "team2";
+  result: 'win' | 'loss';
   duration: number;
   tournament?: string;
   rounds?: number;
@@ -137,13 +120,10 @@ export interface DoublesStats {
   winRate: number;
   currentStreak: number;
   bestStreak: number;
-  avgScore: number;
-  avgScoreConceded: number;
   avgMatchDuration: number;
   bestPartner: string;
   totalPartners: number;
   ranking: number;
-  score: number;
 }
 
 export interface Partner {
@@ -177,9 +157,9 @@ export interface AvailablePlayer {
   avatar?: string;
   city: string;
   club: string;
-  score: number;
   ranking: number;
   winRate: number;
+  wins: number;
   totalMatches: number;
   inTeam: boolean;
 }
@@ -194,7 +174,6 @@ export interface MatchPlayer {
   nickname: string;
   avatar?: string;
   category: string;
-  score: number;
 }
 
 export interface GameMatch {
@@ -206,6 +185,7 @@ export interface GameMatch {
   players: MatchPlayer[];
   teamA?: { name: string; playerIds: string[] };
   teamB?: { name: string; playerIds: string[] };
+  tournament?: string;
   winnerId?: string;
   winningTeam?: 'A' | 'B';
   startedAt?: string;

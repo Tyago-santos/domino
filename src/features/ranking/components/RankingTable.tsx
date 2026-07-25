@@ -4,10 +4,9 @@ import { Avatar, Progress, Card } from '@/components/ui';
 import { cn } from '@/shared/lib/utils';
 import type { RankingEntry } from '@/shared/types';
 
-const CURRENT_USER_ID = 'player-001';
-
 interface RankingTableProps {
   entries: RankingEntry[];
+  currentUserId?: string;
 }
 
 function PositionBadge({ position }: { position: number }) {
@@ -73,7 +72,7 @@ function WinRateBar({ rate }: { rate: number }) {
   );
 }
 
-export function RankingTable({ entries }: RankingTableProps) {
+export function RankingTable({ entries, currentUserId }: RankingTableProps) {
   return (
     <Card className="overflow-hidden">
       {/* Desktop table */}
@@ -91,7 +90,7 @@ export function RankingTable({ entries }: RankingTableProps) {
         </div>
         <div className="divide-y divide-surface-border">
           {entries.map((entry, index) => {
-            const isCurrentUser = entry.playerId === CURRENT_USER_ID;
+            const isCurrentUser = entry.playerId === currentUserId;
             return (
               <motion.div
                 key={entry.playerId}
@@ -118,7 +117,7 @@ export function RankingTable({ entries }: RankingTableProps) {
                 </div>
                 <span className="text-sm text-text-muted truncate">{entry.city}</span>
                 <span className="text-sm text-text-muted truncate">{entry.club}</span>
-                <span className="text-right text-sm font-bold tabular-nums text-text">{entry.score.toLocaleString('pt-BR')}</span>
+                <span className="text-right text-sm font-bold tabular-nums text-text">{entry.wins}</span>
                 <WinRateBar rate={entry.winRate} />
                 <span className="text-center text-sm font-medium tabular-nums text-emerald-600 dark:text-emerald-400">{entry.wins}</span>
                 <span className="text-center text-sm font-medium tabular-nums text-red-500">{entry.losses}</span>
@@ -132,7 +131,7 @@ export function RankingTable({ entries }: RankingTableProps) {
       {/* Mobile cards */}
       <div className="space-y-2 p-3 sm:hidden">
         {entries.map((entry, index) => {
-          const isCurrentUser = entry.playerId === CURRENT_USER_ID;
+          const isCurrentUser = entry.playerId === currentUserId;
           return (
             <motion.div
               key={entry.playerId}
@@ -158,7 +157,7 @@ export function RankingTable({ entries }: RankingTableProps) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold tabular-nums text-text">{entry.score.toLocaleString('pt-BR')}</p>
+                  <p className="text-sm font-bold tabular-nums text-text">{entry.wins}</p>
                   <TrendIndicator trend={entry.trend} />
                 </div>
               </div>

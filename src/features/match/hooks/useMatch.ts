@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/app/providers/AuthProvider";
 import * as matchService from "@/shared/services/matchService";
+import { getMyTeam } from "@/shared/services/doublesService";
 import type { MatchMode, PlayerCount, MatchPlayer } from "@/shared/types";
 
 export function useAllPlayers() {
@@ -76,6 +77,11 @@ export function useConfirmVictory() {
       queryClient.invalidateQueries({ queryKey: ["match", "activeForPlayer"] });
       queryClient.invalidateQueries({ queryKey: ["match", "history"] });
       queryClient.invalidateQueries({ queryKey: ["match", "recent"] });
+      queryClient.invalidateQueries({ queryKey: ["ranking"] });
+      queryClient.invalidateQueries({ queryKey: ["player"] });
+      queryClient.invalidateQueries({ queryKey: ["playerStats"] });
+      queryClient.invalidateQueries({ queryKey: ["statistics"] });
+      queryClient.invalidateQueries({ queryKey: ["doubles"] });
     },
   });
 }
@@ -115,5 +121,27 @@ export function useConfirmations(matchId: string | null) {
     queryFn: () => matchService.getConfirmations(matchId!),
     enabled: !!matchId,
     refetchInterval: 1000,
+  });
+}
+
+export function useMyTeam() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["match", "myTeam", user?.uid],
+    queryFn: () => getMyTeam(user!.uid),
+    enabled: !!user?.uid,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCancelMatch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (matchId: string) => matchService.cancelMatch(matchId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["match", "active"] });
+      queryClient.invalidateQueries({ queryKey: ["match", "activeForPlayer"] });
+    },
   });
 }

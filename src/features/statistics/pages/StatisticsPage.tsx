@@ -7,8 +7,6 @@ import { RankingEvolutionStats } from "../components/RankingEvolutionStats";
 import { WinsByMonthChart } from "../components/WinsByMonthChart";
 import { MatchesByWeekChart } from "../components/MatchesByWeekChart";
 import { WinRateChart } from "../components/WinRateChart";
-import { AvgScoreChart } from "../components/AvgScoreChart";
-import { ScoreConcededChart } from "../components/ScoreConcededChart";
 import { AvgDurationChart } from "../components/AvgDurationChart";
 import { WeeklyFrequencyChart } from "../components/WeeklyFrequencyChart";
 import { ActiveHoursChart } from "../components/ActiveHoursChart";
@@ -45,11 +43,11 @@ export default function StatisticsPage() {
   const [period, setPeriod] = useState<PeriodFilter>("30days");
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text">Estatísticas</h1>
-          <p className="text-sm text-text-muted">
+          <h1 className="text-lg font-bold text-text sm:text-2xl">Estatísticas</h1>
+          <p className="text-[10px] text-text-muted sm:text-sm">
             Análise detalhada do seu desempenho no dominó
           </p>
         </div>
@@ -64,21 +62,21 @@ export default function StatisticsPage() {
       </div>
 
       <Tabs defaultValue="geral">
-        <TabsList>
-          <TabsTrigger value="geral">
-            <BarChart3 className="mr-1.5 h-4 w-4" />
+        <TabsList className="w-full overflow-x-auto sm:w-auto">
+          <TabsTrigger value="geral" className="text-[10px] sm:text-sm">
+            <BarChart3 className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-4 sm:w-4" />
             Geral
           </TabsTrigger>
-          <TabsTrigger value="desempenho">
-            <TrendingUp className="mr-1.5 h-4 w-4" />
+          <TabsTrigger value="desempenho" className="text-[10px] sm:text-sm">
+            <TrendingUp className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-4 sm:w-4" />
             Desempenho
           </TabsTrigger>
-          <TabsTrigger value="horarios">
-            <Clock className="mr-1.5 h-4 w-4" />
+          <TabsTrigger value="horarios" className="text-[10px] sm:text-sm">
+            <Clock className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-4 sm:w-4" />
             Horários
           </TabsTrigger>
-          <TabsTrigger value="historico">
-            <CalendarDays className="mr-1.5 h-4 w-4" />
+          <TabsTrigger value="historico" className="text-[10px] sm:text-sm">
+            <CalendarDays className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-4 sm:w-4" />
             Histórico
           </TabsTrigger>
         </TabsList>
@@ -88,7 +86,7 @@ export default function StatisticsPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+            className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2"
           >
             <motion.div variants={itemVariants}>
               <WinRateChart />
@@ -110,14 +108,8 @@ export default function StatisticsPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+            className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2"
           >
-            <motion.div variants={itemVariants}>
-              <AvgScoreChart />
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <ScoreConcededChart />
-            </motion.div>
             <motion.div variants={itemVariants}>
               <AvgDurationChart />
             </motion.div>
@@ -129,7 +121,7 @@ export default function StatisticsPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+            className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2"
           >
             <motion.div variants={itemVariants}>
               <WeeklyFrequencyChart />
@@ -145,7 +137,7 @@ export default function StatisticsPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 gap-6"
+            className="grid grid-cols-1 gap-4 sm:gap-6"
           >
             <motion.div variants={itemVariants}>
               <RankingEvolutionStats period={period} />

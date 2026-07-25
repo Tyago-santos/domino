@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Trophy, Users, Check, Clock } from "lucide-react";
 import { Avatar, Button } from "@/components/ui";
 import { cn } from "@/shared/lib/utils";
-import type { MatchPlayer } from "@/shared/types";
+import type { GameMatchStatus, MatchPlayer } from "@/shared/types";
 
 interface TeamCardProps {
   teamName: string;
@@ -11,6 +11,7 @@ interface TeamCardProps {
   isWinner?: boolean;
   confirmedPlayers: string[];
   canConfirm: boolean;
+  matchStatus?: GameMatchStatus;
   onConfirm?: () => void;
   isConfirming?: boolean;
 }
@@ -22,6 +23,7 @@ export function TeamCard({
   isWinner,
   confirmedPlayers,
   canConfirm,
+  matchStatus,
   onConfirm,
   isConfirming,
 }: TeamCardProps) {
@@ -71,6 +73,16 @@ export function TeamCard({
       <div className="mb-4 space-y-3">
         {players.map((player) => {
           const isConfirmed = confirmedPlayers.includes(player.id);
+          const statusText =
+            matchStatus === "finished"
+              ? isWinner
+                ? isConfirmed
+                  ? "Confirmou"
+                  : "Vencedor"
+                : "Derrotado"
+              : isConfirmed
+                ? "Confirmou"
+                : "Aguardando";
           return (
             <div
               key={player.id}
@@ -89,12 +101,16 @@ export function TeamCard({
               {isConfirmed ? (
                 <div className="flex items-center gap-1 text-primary-600 dark:text-primary-400">
                   <Check className="h-4 w-4" />
-                  <span className="text-xs font-medium">Confirmou</span>
+                  <span className="text-xs font-medium">{statusText}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1 text-text-muted">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span className="text-xs">Aguardando</span>
+                  {matchStatus === "finished" ? (
+                    <Trophy className="h-3.5 w-3.5" />
+                  ) : (
+                    <Clock className="h-3.5 w-3.5" />
+                  )}
+                  <span className="text-xs">{statusText}</span>
                 </div>
               )}
             </div>

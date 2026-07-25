@@ -5,7 +5,6 @@ import {
   Frown,
   Percent,
   Medal,
-  Star,
   Flame,
   Zap,
   Clock,
@@ -98,13 +97,7 @@ export function ProfileStats({ stats, isLoading }: ProfileStatsProps) {
       trend: "neutral" as const,
       trendValue: undefined,
     },
-    {
-      label: "Pontuação",
-      value: stats.score,
-      icon: <Star className="h-4 w-4" />,
-      trend: "up" as const,
-      trendValue: undefined,
-    },
+
     {
       label: "Sequência Atual",
       value: stats.currentStreak,

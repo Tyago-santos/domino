@@ -55,19 +55,19 @@ export function WinRateChart() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Taxa de Vitórias</CardTitle>
+      <CardHeader className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <CardTitle className="text-[11px] font-bold sm:text-lg">Taxa de Vitórias</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px] relative">
+      <CardContent className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <div className="h-[200px] relative sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="45%"
-                innerRadius={70}
-                outerRadius={100}
+                innerRadius={45}
+                outerRadius={70}
                 paddingAngle={4}
                 dataKey="value"
                 strokeWidth={0}
@@ -82,8 +82,8 @@ export function WinRateChart() {
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: "10%" }}>
             <div className="text-center">
-              <p className="text-3xl font-bold text-primary-600">{winRate}%</p>
-              <p className="text-xs text-text-muted">de aproveitamento</p>
+              <p className="text-xl font-bold text-primary-600 sm:text-3xl">{winRate}%</p>
+              <p className="text-[9px] text-text-muted sm:text-xs">de aproveitamento</p>
             </div>
           </div>
         </div>

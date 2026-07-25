@@ -7,8 +7,6 @@ import {
   getRanking,
   getChartData,
   getRankingEvolution,
-  getScoreEvolution,
-  getAchievements,
 } from "@/shared/services/playerService";
 import { useAuth } from "@/app/providers/AuthProvider";
 
@@ -32,7 +30,7 @@ export function usePlayerStats() {
 
 export function useMatchHistory(
   period: PeriodFilter = "30days",
-  result?: "win" | "loss" | "draw"
+  result?: "win" | "loss"
 ) {
   const { user } = useAuth();
   return useQuery({
@@ -53,75 +51,8 @@ export function useRankingEvolution(period: PeriodFilter = "30days") {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["rankingEvolution", user?.uid, period],
-    queryFn: () => getRankingEvolution(user!.uid),
+    queryFn: () => getRankingEvolution(user!.uid, period),
     enabled: !!user?.uid,
-    select: (data) => {
-      const now = new Date();
-      let startDate: Date;
-      switch (period) {
-        case "today":
-          startDate = new Date(now);
-          startDate.setHours(0, 0, 0, 0);
-          break;
-        case "7days":
-          startDate = new Date(now);
-          startDate.setDate(startDate.getDate() - 7);
-          break;
-        case "30days":
-          startDate = new Date(now);
-          startDate.setDate(startDate.getDate() - 30);
-          break;
-        case "90days":
-          startDate = new Date(now);
-          startDate.setDate(startDate.getDate() - 90);
-          break;
-        case "year":
-          startDate = new Date(now);
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          break;
-        default:
-          startDate = new Date("2000-01-01");
-      }
-      return data.filter((point) => new Date(point.date) >= startDate);
-    },
-  });
-}
-
-export function useScoreEvolution(period: PeriodFilter = "30days") {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["scoreEvolution", user?.uid, period],
-    queryFn: () => getScoreEvolution(user!.uid),
-    enabled: !!user?.uid,
-    select: (data) => {
-      const now = new Date();
-      let startDate: Date;
-      switch (period) {
-        case "today":
-          startDate = new Date(now);
-          startDate.setHours(0, 0, 0, 0);
-          break;
-        case "7days":
-          startDate = new Date(now);
-          startDate.setDate(startDate.getDate() - 7);
-          break;
-        case "30days":
-          startDate = new Date(now);
-          startDate.setDate(startDate.getDate() - 30);
-          break;
-        case "90days":
-          startDate = new Date(now);
-          startDate.setDate(startDate.getDate() - 90);
-          break;
-        case "year":
-          startDate = new Date(now);
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          break;
-        default:
-          startDate = new Date("2000-01-01");
-      }
-      return data.filter((point) => new Date(point.date) >= startDate);
-    },
   });
 }
 
@@ -134,11 +65,4 @@ export function useChartData(period: PeriodFilter = "30days") {
   });
 }
 
-export function useAchievements() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["achievements", user?.uid],
-    queryFn: () => getAchievements(user!.uid),
-    enabled: !!user?.uid,
-  });
-}
+

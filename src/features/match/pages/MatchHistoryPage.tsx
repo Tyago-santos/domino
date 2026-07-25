@@ -139,7 +139,7 @@ export default function MatchHistoryPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-1">
-                            {match.players.slice(0, 4).map((p) => (
+                            {(match.players ?? []).slice(0, 4).map((p) => (
                               <div
                                 key={p.id}
                                 className="flex h-6 w-6 items-center justify-center rounded-full border border-surface bg-primary-100 text-[9px] font-bold text-primary-700 dark:bg-primary-900 dark:text-primary-300"
@@ -149,7 +149,7 @@ export default function MatchHistoryPage() {
                             ))}
                           </div>
                           <span className="text-xs text-text-muted">
-                            {match.players.map((p) => p.nickname).join(", ")}
+                            {(match.players ?? []).map((p) => p.nickname).join(", ")}
                           </span>
                         </div>
                       </td>
@@ -157,7 +157,7 @@ export default function MatchHistoryPage() {
                         <Badge variant="secondary">
                           <Trophy className="mr-1 h-3 w-3" />
                           {match.mode === "individual"
-                            ? match.players.find((p) => p.id === match.winnerId)?.nickname || "?"
+                            ? (match.players ?? []).find((p) => p.id === match.winnerId)?.nickname || "?"
                             : match.winningTeam === "A"
                               ? match.teamA?.name || "Equipe A"
                               : match.teamB?.name || "Equipe B"}
@@ -195,7 +195,7 @@ export default function MatchHistoryPage() {
                       <Badge variant="success">
                         <Trophy className="mr-1 h-3 w-3" />
                         {match.mode === "individual"
-                          ? match.players.find((p) => p.id === match.winnerId)?.nickname || "?"
+                          ? (match.players ?? []).find((p) => p.id === match.winnerId)?.nickname || "?"
                           : match.winningTeam === "A"
                             ? match.teamA?.name
                             : match.teamB?.name}
@@ -208,7 +208,7 @@ export default function MatchHistoryPage() {
                     </span>
                   </div>
                   <p className="text-xs text-text-muted">
-                    {match.players.map((p) => p.nickname).join(" vs ")}
+                    {(match.players ?? []).map((p) => p.nickname).join(" vs ")}
                   </p>
                   <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
                     <span className="flex items-center gap-1">
@@ -217,7 +217,7 @@ export default function MatchHistoryPage() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
-                      {match.players.length} jogadores
+                      {(match.players ?? []).length} jogadores
                     </span>
                   </div>
                 </div>

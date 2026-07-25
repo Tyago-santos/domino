@@ -24,11 +24,10 @@ function formatDate(dateStr: string): string {
 
 const resultConfig: Record<
   Match["result"],
-  { label: string; variant: "success" | "destructive" | "secondary" }
+  { label: string; variant: "success" | "destructive" }
 > = {
   win: { label: "Vitória", variant: "success" },
   loss: { label: "Derrota", variant: "destructive" },
-  draw: { label: "Empate", variant: "secondary" },
 };
 
 function MobileCard({ match }: { match: Match }) {
@@ -38,7 +37,6 @@ function MobileCard({ match }: { match: Match }) {
       "rounded-lg border border-surface-border p-3 dark:border-surface-border",
       match.result === "win" && "bg-emerald-50/50 dark:bg-emerald-950/20",
       match.result === "loss" && "bg-red-50/50 dark:bg-red-950/20",
-      match.result === "draw" && "bg-surface-muted/50 dark:bg-surface-muted/50"
     )}>
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -48,28 +46,11 @@ function MobileCard({ match }: { match: Match }) {
         <Badge variant={config.variant}>{config.label}</Badge>
       </div>
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Avatar size="xs" src={match.opponentAvatar} alt={match.opponent} fallback={match.opponent} />
-          <span className="text-xs text-text-muted">vs {match.opponent}</span>
+          <div className="flex items-center gap-2">
+            <Avatar size="xs" src={match.opponentAvatar} alt={match.opponent} fallback={match.opponent} />
+          <span className="text-xs text-text-muted">vs {match.opponent || "—"}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className={cn(
-            "text-sm font-semibold",
-            match.result === "win" && "text-emerald-600 dark:text-emerald-400",
-            match.result === "loss" && "text-red-600 dark:text-red-400",
-            match.result === "draw" && "text-text-muted"
-          )}>
-            {match.score}
-          </span>
-          <span className="text-xs text-text-muted">×</span>
-          <span className={cn(
-            "text-sm",
-            match.result === "loss" && "font-semibold text-emerald-600 dark:text-emerald-400",
-            match.result !== "loss" && "text-text-muted"
-          )}>
-            {match.scoreConceded}
-          </span>
-        </div>
+
       </div>
       <div className="flex items-center justify-between text-xs text-text-muted">
         <span>{formatDuration(match.duration)}</span>
@@ -115,7 +96,7 @@ export function HistoryTable({ matches, onExport }: HistoryTableProps) {
               alt={row.opponent}
               fallback={row.opponent}
             />
-            <span className="text-text dark:text-text">{row.opponent}</span>
+            <span className="text-text dark:text-text">{row.opponent || "—"}</span>
           </div>
         ),
       },
@@ -130,7 +111,7 @@ export function HistoryTable({ matches, onExport }: HistoryTableProps) {
               alt={row.partner}
               fallback={row.partner}
             />
-            <span className="text-text dark:text-text">{row.partner}</span>
+            <span className="text-text dark:text-text">{row.partner || "—"}</span>
           </div>
         ),
       },
@@ -144,34 +125,7 @@ export function HistoryTable({ matches, onExport }: HistoryTableProps) {
           return <Badge variant={config.variant}>{config.label}</Badge>;
         },
       },
-      {
-        id: "score",
-        header: "Pontuação",
-        cell: (row) => (
-          <div className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                "font-semibold",
-                row.result === "win" && "text-emerald-600 dark:text-emerald-400",
-                row.result === "loss" && "text-red-600 dark:text-red-400",
-                row.result === "draw" && "text-text-muted dark:text-text-muted",
-              )}
-            >
-              {row.score}
-            </span>
-            <span className="text-text-muted dark:text-text-muted">×</span>
-            <span
-              className={cn(
-                row.result === "win" && "text-text-muted dark:text-text-muted",
-                row.result === "loss" && "font-semibold text-emerald-600 dark:text-emerald-400",
-                row.result === "draw" && "text-text-muted dark:text-text-muted",
-              )}
-            >
-              {row.scoreConceded}
-            </span>
-          </div>
-        ),
-      },
+
       {
         id: "duration",
         header: "Duração",

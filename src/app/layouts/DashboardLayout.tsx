@@ -12,7 +12,6 @@ import {
   X,
   Sun,
   Moon,
-  Search,
   ChevronRight,
   LogOut,
   Swords,
@@ -138,9 +137,6 @@ export function DashboardLayout() {
               <p className="text-sm font-medium text-sidebar-text truncate">
                 {user?.nickname || "Jogador"}
               </p>
-              <p className="text-xs text-sidebar-text-muted truncate">
-                Nível 12
-              </p>
             </div>
             <button
               onClick={async () => { await logout(); navigate("/login"); }}
@@ -161,15 +157,6 @@ export function DashboardLayout() {
           >
             <Menu className="h-5 w-5" />
           </button>
-
-          <div className="hidden items-center gap-2 md:flex">
-            <Search className="h-4 w-4 text-text-muted" />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              className="w-64 rounded-lg border border-surface-border bg-surface-muted px-3 py-1.5 text-sm text-text placeholder:text-text-muted focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            />
-          </div>
 
           <div className="flex items-center gap-2">
             <button

@@ -14,8 +14,6 @@ function exportToCSV(matches: ReturnType<typeof useHistory>["filteredMatches"]) 
     "Adversário",
     "Parceiro",
     "Resultado",
-    "Pontos Marcados",
-    "Pontos Sofridos",
     "Duração (min)",
     "Campeonato",
   ];
@@ -23,7 +21,6 @@ function exportToCSV(matches: ReturnType<typeof useHistory>["filteredMatches"]) 
   const resultLabel: Record<string, string> = {
     win: "Vitória",
     loss: "Derrota",
-    draw: "Empate",
   };
 
   const rows = matches.map((m) => [
@@ -32,8 +29,6 @@ function exportToCSV(matches: ReturnType<typeof useHistory>["filteredMatches"]) 
     m.opponent,
     m.partner,
     resultLabel[m.result] ?? m.result,
-    String(m.score),
-    String(m.scoreConceded),
     String(m.duration),
     m.tournament ?? "",
   ]);

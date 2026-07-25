@@ -55,49 +55,49 @@ export default function DoublesPage() {
   const { data: partners, isLoading: loadingPartners } = usePartners();
 
   return (
-    <motion.div
-      className="flex flex-col gap-6"
+      <motion.div
+        className="flex flex-col gap-4 sm:gap-6"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={itemVariants} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
-            <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+      <motion.div variants={itemVariants} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40 sm:h-11 sm:w-11">
+            <Users className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400 sm:h-6 sm:w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-text">Duplas</h1>
-            <p className="text-sm text-text-muted">Jogue em dupla e suba no ranking</p>
+            <h1 className="text-lg font-bold tracking-tight text-text sm:text-2xl">Duplas</h1>
+            <p className="text-[10px] text-text-muted sm:text-sm">Jogue em dupla e suba no ranking</p>
           </div>
         </div>
 
         <Button
           onClick={() => setShowFormModal(true)}
-          className="bg-emerald-600 text-white hover:bg-emerald-700"
+          className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] sm:text-sm"
         >
-          <UserPlus className="mr-2 h-4 w-4" />
+          <UserPlus className="mr-1.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
           Formar Dupla
         </Button>
       </motion.div>
 
       <motion.div variants={itemVariants}>
         <Tabs defaultValue="team">
-          <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="team" className="gap-1.5">
-              <Users className="h-4 w-4" />
+          <TabsList className="w-full overflow-x-auto sm:w-auto">
+            <TabsTrigger value="team" className="gap-1 text-[10px] sm:gap-1.5 sm:text-sm">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4" />
               Minha Dupla
             </TabsTrigger>
-            <TabsTrigger value="ranking" className="gap-1.5">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger value="ranking" className="gap-1 text-[10px] sm:gap-1.5 sm:text-sm">
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
               Ranking
             </TabsTrigger>
-            <TabsTrigger value="matches" className="gap-1.5">
-              <Swords className="h-4 w-4" />
+            <TabsTrigger value="matches" className="gap-1 text-[10px] sm:gap-1.5 sm:text-sm">
+              <Swords className="h-3 w-3 sm:h-4 sm:w-4" />
               Partidas
             </TabsTrigger>
-            <TabsTrigger value="stats" className="gap-1.5">
-              <BarChart3 className="h-4 w-4" />
+            <TabsTrigger value="stats" className="gap-1 text-[10px] sm:gap-1.5 sm:text-sm">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
               Estatísticas
             </TabsTrigger>
           </TabsList>

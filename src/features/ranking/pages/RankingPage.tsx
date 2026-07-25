@@ -5,6 +5,7 @@ import { Card, Button, StatCard } from '@/components/ui';
 import { useRanking } from '../hooks/useRanking';
 import { RankingFilters } from '../components/RankingFilters';
 import { RankingTable } from '../components/RankingTable';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -20,6 +21,7 @@ const itemVariants = {
 };
 
 export default function RankingPage() {
+  const { user } = useAuth();
   const { data: ranking, isLoading, error, refetch, isFetching } = useRanking();
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
@@ -88,19 +90,19 @@ export default function RankingPage() {
             label="1º Lugar"
             value={top3[0]!.playerName}
             trend="up"
-            trendValue={`${top3[0]!.score.toLocaleString('pt-BR')} pts`}
+            trendValue={`${top3[0]!.wins} pts`}
           />
           <StatCard
             label="2º Lugar"
             value={top3[1]!.playerName}
             trend="up"
-            trendValue={`${top3[1]!.score.toLocaleString('pt-BR')} pts`}
+            trendValue={`${top3[1]!.wins} pts`}
           />
           <StatCard
             label="3º Lugar"
             value={top3[2]!.playerName}
             trend="neutral"
-            trendValue={`${top3[2]!.score.toLocaleString('pt-BR')} pts`}
+            trendValue={`${top3[2]!.wins} pts`}
           />
         </motion.div>
       )}
@@ -135,7 +137,7 @@ export default function RankingPage() {
             </Button>
           </Card>
         ) : (
-          <RankingTable entries={filtered} />
+          <RankingTable entries={filtered} currentUserId={user?.uid} />
         )}
       </motion.div>
     </motion.div>

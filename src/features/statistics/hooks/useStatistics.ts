@@ -3,7 +3,6 @@ import {
   getPlayerStats,
   getChartData,
   getRankingEvolution,
-  getScoreEvolution,
 } from "@/shared/services/playerService";
 import { useAuth } from "@/app/providers/AuthProvider";
 import type { PeriodFilter } from "@/shared/types";
@@ -28,21 +27,11 @@ export function useChartData(period: PeriodFilter = "30days") {
   });
 }
 
-export function useRankingEvolution() {
+export function useRankingEvolution(period: PeriodFilter = "year") {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["statistics", "rankingEvolution", user?.uid],
-    queryFn: () => getRankingEvolution(user!.uid),
-    enabled: !!user?.uid,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useScoreEvolution() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["statistics", "scoreEvolution", user?.uid],
-    queryFn: () => getScoreEvolution(user!.uid),
+    queryKey: ["statistics", "rankingEvolution", user?.uid, period],
+    queryFn: () => getRankingEvolution(user!.uid, period),
     enabled: !!user?.uid,
     staleTime: 5 * 60 * 1000,
   });

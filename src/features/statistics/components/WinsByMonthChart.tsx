@@ -52,19 +52,19 @@ export function WinsByMonthChart({ period }: WinsByMonthChartProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Vitórias por Mês</CardTitle>
+      <CardHeader className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <CardTitle className="text-[11px] font-bold sm:text-lg">Vitórias por Mês</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
+      <CardContent className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 12, fill: "#64748b" }}
+                tick={{ fontSize: 10, fill: "#64748b" }}
               />
-              <YAxis tick={{ fontSize: 12, fill: "#64748b" }} />
+              <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={50}>
                 {chartData.map((_, index) => (

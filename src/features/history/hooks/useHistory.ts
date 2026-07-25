@@ -18,7 +18,6 @@ export interface HistorySummary {
   total: number;
   wins: number;
   losses: number;
-  draws: number;
   winRate: number;
 }
 
@@ -126,11 +125,10 @@ export function useHistory(initialFilters?: Partial<HistoryFilters>) {
   const summary = useMemo<HistorySummary>(() => {
     const wins = filteredMatches.filter((m) => m.result === "win").length;
     const losses = filteredMatches.filter((m) => m.result === "loss").length;
-    const draws = filteredMatches.filter((m) => m.result === "draw").length;
     const total = filteredMatches.length;
     const winRate = total > 0 ? wins / total : 0;
 
-    return { total, wins, losses, draws, winRate };
+    return { total, wins, losses, winRate };
   }, [filteredMatches]);
 
   return {

@@ -76,18 +76,18 @@ export function RankingEvolutionChart() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-lg">Evolução do Ranking</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 py-2.5 sm:px-6 sm:py-4">
+        <CardTitle className="text-[11px] font-bold sm:text-lg">Evolução do Ranking</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
+      <CardContent className="px-3 py-2.5 sm:px-6 sm:py-4">
+        <div className="mb-3 sm:mb-4">
           <PeriodFilter value={period} onChange={setPeriod} />
         </div>
-        <div className="h-[300px]">
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
-              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+              margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -96,13 +96,13 @@ export function RankingEvolutionChart() {
               />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12, fill: "var(--color-text-muted, #9ca3af)" }}
+                tick={{ fontSize: 10, fill: "var(--color-text-muted, #9ca3af)" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
                 reversed
-                tick={{ fontSize: 12, fill: "var(--color-text-muted, #9ca3af)" }}
+                tick={{ fontSize: 10, fill: "var(--color-text-muted, #9ca3af)" }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(value) => `#${value}`}
@@ -111,7 +111,7 @@ export function RankingEvolutionChart() {
               <Tooltip content={<CustomTooltip />} />
               <Legend
                 wrapperStyle={{
-                  fontSize: "12px",
+                  fontSize: "10px",
                   color: "var(--color-text-muted, #9ca3af)",
                 }}
               />

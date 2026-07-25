@@ -20,7 +20,6 @@ const resultOptions = [
   { value: "all", label: "Todos" },
   { value: "win", label: "Vitórias" },
   { value: "loss", label: "Derrotas" },
-  { value: "draw", label: "Empates" },
 ];
 
 export function HistoryFilters({
@@ -42,9 +41,9 @@ export function HistoryFilters({
     filters.search !== "";
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-3 sm:space-y-4", className)}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-text dark:text-text">
+        <h3 className="text-[10px] font-medium text-text dark:text-text sm:text-sm">
           Filtros
         </h3>
         {hasActiveFilters && (
@@ -52,23 +51,23 @@ export function HistoryFilters({
             variant="ghost"
             size="sm"
             onClick={onReset}
-            className="gap-1.5 text-text-muted"
+            className="gap-1 text-[9px] text-text-muted sm:gap-1.5 sm:text-sm"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             Limpar filtros
           </Button>
         )}
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted sm:left-3 sm:h-4 sm:w-4" />
         <input
           type="text"
-          placeholder="Buscar por adversário, parceiro ou campeonato..."
+          placeholder="Buscar..."
           value={filters.search}
           onChange={(e) => onFilterChange("search", e.target.value)}
           className={cn(
-            "flex h-10 w-full rounded-md border border-surface-border bg-surface pl-10 pr-3 py-2 text-sm text-text",
+            "flex h-9 w-full rounded-md border border-surface-border bg-surface pl-8 pr-3 py-1.5 text-[10px] text-text sm:h-10 sm:pl-10 sm:py-2 sm:text-sm",
             "placeholder:text-text-muted",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
             "dark:border-surface-border dark:bg-surface dark:text-text",
@@ -76,7 +75,7 @@ export function HistoryFilters({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-5">
         <Input
           label="Data início"
           type="date"

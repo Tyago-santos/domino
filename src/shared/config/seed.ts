@@ -66,8 +66,7 @@ export async function seedDatabase(): Promise<boolean> {
     const d = new Date();
     d.setDate(d.getDate() - Math.floor(Math.random() * 180));
     const isWin = Math.random() < 0.65;
-    const isDraw = !isWin && Math.random() < 0.05;
-    const result = isWin ? "win" : isDraw ? "draw" : "loss";
+    const result = isWin ? "win" : "loss";
     const score = isWin ? Math.floor(50 + Math.random() * 50) : Math.floor(20 + Math.random() * 30);
     const scoreConceded = isWin ? Math.floor(10 + Math.random() * 25) : Math.floor(40 + Math.random() * 40);
     const matchId = push(ref(db, "matches")).key!;
@@ -99,44 +98,6 @@ export async function seedDatabase(): Promise<boolean> {
     tournamentsData[id] = { ...t, date: t.date.toISOString() };
   }
   await set(ref(db, "tournaments"), tournamentsData);
-
-  const achievementsData: Record<string, unknown> = {};
-  const aList = [
-    { name: "Primeira Vitória", description: "Ganhe sua primeira partida", icon: "Trophy", maxProgress: 1 },
-    { name: "Sequência de 5", description: "Ganhe 5 partidas seguidas", icon: "Flame", maxProgress: 5 },
-    { name: "100 Partidas", description: "Jogue 100 partidas", icon: "Target", maxProgress: 100 },
-    { name: "Mestre do Ranking", description: "Alcance o top 5 do ranking", icon: "Medal", maxProgress: 5 },
-    { name: "Jogador Social", description: "Jogue com 10 parceiros diferentes", icon: "Users", maxProgress: 10 },
-    { name: "Campeão de Torneio", description: "Vença um torneio", icon: "Crown", maxProgress: 1 },
-    { name: "Sequência de 10", description: "Ganhe 10 partidas seguidas", icon: "Flame", maxProgress: 10 },
-    { name: "Maratonista", description: "Jogue 500 partidas", icon: "Timer", maxProgress: 500 },
-  ];
-  for (const a of aList) {
-    const id = push(ref(db, "achievements")).key!;
-    achievementsData[id] = a;
-  }
-  await set(ref(db, "achievements"), achievementsData);
-
-  const achievementKeys = Object.keys(achievementsData);
-  const myAchievements: Record<string, unknown> = {};
-  const paData = [
-    { playerId: myId, achievementIndex: 0, achievementId: achievementKeys[0], progress: 1, unlocked: true },
-    { playerId: myId, achievementIndex: 1, achievementId: achievementKeys[1], progress: 5, unlocked: true },
-    { playerId: myId, achievementIndex: 2, achievementId: achievementKeys[2], progress: 80, unlocked: false },
-    { playerId: myId, achievementIndex: 4, achievementId: achievementKeys[4], progress: 3, unlocked: false },
-  ];
-  for (const ma of paData) {
-    const id = push(ref(db, "playerAchievements")).key!;
-    myAchievements[id] = {
-      playerId: ma.playerId,
-      achievementIndex: ma.achievementIndex,
-      achievementId: ma.achievementId,
-      progress: ma.progress,
-      unlocked: ma.unlocked,
-      unlockedAt: ma.unlocked ? new Date().toISOString() : null,
-    };
-  }
-  await set(ref(db, "playerAchievements"), myAchievements);
 
   const teamsUpdates: Record<string, unknown> = {};
   const teamsData = [

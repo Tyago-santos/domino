@@ -46,63 +46,63 @@ export function MatchResultOverlay({ match, onBack }: MatchResultOverlayProps) {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 200, damping: 20 }}
-        className="mx-4 w-full max-w-lg overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-2xl"
+        className="mx-0 flex h-full w-full flex-col overflow-hidden rounded-none border-0 border-surface-border bg-surface shadow-2xl sm:mx-4 sm:h-auto sm:max-w-lg sm:rounded-2xl sm:border"
       >
-        <div className="bg-gradient-to-br from-yellow-400 to-amber-500 p-8 text-center">
+        <div className="bg-gradient-to-br from-yellow-400 to-amber-500 p-5 text-center sm:p-8">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
           >
-            <Trophy className="mx-auto h-16 w-16 text-white" />
+            <Trophy className="mx-auto h-10 w-10 text-white sm:h-16 sm:w-16" />
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mt-4 text-2xl font-bold text-white"
+            className="mt-3 text-lg font-bold text-white sm:mt-4 sm:text-2xl"
           >
             Partida Encerrada!
           </motion.h2>
         </div>
 
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {match.mode === "individual" && winnerPlayer ? (
             <div className="text-center">
-              <p className="text-sm text-text-muted">Vencedor</p>
-              <div className="mt-2 flex items-center justify-center gap-3">
+              <p className="text-[10px] text-text-muted sm:text-sm">Vencedor</p>
+              <div className="mt-2 flex items-center justify-center gap-2 sm:gap-3">
                 <Avatar size="lg" src={winnerPlayer.avatar} fallback={winnerPlayer.name} />
                 <div className="text-left">
-                  <p className="text-lg font-bold text-text">{winnerPlayer.name}</p>
-                  <p className="text-sm text-text-muted">@{winnerPlayer.nickname}</p>
+                  <p className="text-[11px] font-bold text-text sm:text-lg">{winnerPlayer.name}</p>
+                  <p className="text-[10px] text-text-muted sm:text-sm">@{winnerPlayer.nickname}</p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="rounded-xl border-2 border-yellow-300 bg-yellow-50 p-4 text-center dark:bg-yellow-950/20">
-                <p className="text-sm text-text-muted">Equipe Vencedora</p>
-                <p className="mt-1 text-lg font-bold text-yellow-700 dark:text-yellow-300">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="rounded-xl border-2 border-yellow-300 bg-yellow-50 p-3 text-center dark:bg-yellow-950/20 sm:p-4">
+                <p className="text-[10px] text-text-muted sm:text-sm">Equipe Vencedora</p>
+                <p className="mt-1 text-[11px] font-bold text-yellow-700 dark:text-yellow-300 sm:text-lg">
                   {winningTeamName}
                 </p>
-                <div className="mt-3 flex items-center justify-center gap-4">
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-3 sm:mt-3 sm:gap-4">
                   {winningPlayers?.map((p) => (
-                    <div key={p.id} className="flex items-center gap-2">
+                    <div key={p.id} className="flex items-center gap-1.5 sm:gap-2">
                       <Avatar size="sm" src={p.avatar} fallback={p.name} />
-                      <span className="text-sm font-medium text-text">{p.nickname}</span>
+                      <span className="text-[10px] font-medium text-text sm:text-sm">{p.nickname}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {losingPlayers && losingPlayers.length > 0 && (
-                <div className="rounded-lg border border-surface-border bg-surface-muted p-3 text-center">
-                  <p className="text-xs text-text-muted">Derrotados</p>
-                  <div className="mt-2 flex items-center justify-center gap-4">
+                <div className="rounded-lg border border-surface-border bg-surface-muted p-2.5 text-center sm:p-3">
+                  <p className="text-[9px] text-text-muted sm:text-xs">Derrotados</p>
+                  <div className="mt-1.5 flex flex-wrap items-center justify-center gap-3 sm:mt-2 sm:gap-4">
                     {losingPlayers.map((p) => (
-                      <div key={p.id} className="flex items-center gap-2">
+                      <div key={p.id} className="flex items-center gap-1.5 sm:gap-2">
                         <Avatar size="xs" src={p.avatar} fallback={p.name} />
-                        <span className="text-xs text-text-muted">{p.nickname}</span>
+                        <span className="text-[9px] text-text-muted sm:text-xs">{p.nickname}</span>
                       </div>
                     ))}
                   </div>
@@ -111,23 +111,23 @@ export function MatchResultOverlay({ match, onBack }: MatchResultOverlayProps) {
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-text-muted">
+          <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-text-muted sm:mt-6 sm:gap-6 sm:text-sm">
             {match.duration != null && (
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{formatDuration(match.duration)}</span>
               </div>
             )}
             {match.endedAt && (
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-4 w-4" />
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{new Date(match.endedAt).toLocaleDateString("pt-BR")}</span>
               </div>
             )}
           </div>
 
-          <Button onClick={onBack} className="mt-6 w-full bg-primary-600 text-white hover:bg-primary-700">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+          <Button onClick={onBack} className="mt-4 w-full bg-primary-600 text-white hover:bg-primary-700 text-[10px] sm:mt-6 sm:text-sm">
+            <ArrowLeft className="mr-1.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
             Voltar ao Início
           </Button>
         </div>

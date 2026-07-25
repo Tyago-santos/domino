@@ -24,7 +24,6 @@ interface PlayerData {
   state: string;
   club: string;
   category: string;
-  score?: number;
 }
 
 interface MatchData {
@@ -43,6 +42,18 @@ interface MatchData {
   createdAt: string;
   createdBy: string;
   createdByName: string;
+}
+
+interface PlayerMatchHistoryData {
+  playerId: string;
+  date: string;
+  time: string;
+  mode: MatchMode;
+  opponent: string;
+  partner: string;
+  result: "win" | "loss";
+  duration: number;
+  tournament?: string;
 }
 
 interface ConfirmationData {
@@ -86,7 +97,6 @@ export async function getAllPlayers(): Promise<MatchPlayer[]> {
       nickname: d.nickname,
       avatar: d.avatar || "",
       category: d.category,
-      score: d.score || 0,
     });
   });
   return players;
@@ -136,7 +146,7 @@ export async function getActiveMatchForPlayer(uid: string): Promise<GameMatch | 
   let found: GameMatch | null = null;
   snap.forEach((child) => {
     const d = child.val() as MatchData;
-    const isPlayer = d.players.some((p) => p.id === uid);
+    const isPlayer = (d.players ?? []).some((p) => p.id === uid);
     if (isPlayer && d.status !== "finished") {
       found = { id: child.key!, ...d };
     }
@@ -168,7 +178,9 @@ export async function confirmVictory(
     await updatePlayerStats(winnerIds, "win");
     await updatePlayerStats(loserIds, "loss");
 
-    await moveToHistory(matchId, { ...match, winnerId: playerId, status: "finished", endedAt, duration });
+    const finishedMatch: GameMatch = { ...match, winnerId: playerId, status: "finished", endedAt, duration };
+    await recordPlayerHistory(finishedMatch, winnerIds, loserIds, endedAt, duration);
+    await moveToHistory(matchId, finishedMatch);
     return { finalized: true };
   }
 
@@ -206,8 +218,10 @@ export async function confirmVictory(
     await updatePlayerStats(winnerIds, "win");
     await updatePlayerStats(loserIds, "loss");
 
-    await moveToHistory(matchId, { ...match, winningTeam, status: "finished", endedAt, duration });
-    return { finalized: true, match: { ...match, winningTeam, status: "finished", endedAt, duration } };
+    const finishedMatch: GameMatch = { ...match, winningTeam, status: "finished", endedAt, duration };
+    await recordPlayerHistory(finishedMatch, winnerIds, loserIds, endedAt, duration);
+    await moveToHistory(matchId, finishedMatch);
+    return { finalized: true, match: finishedMatch };
   }
 
   return { finalized: false };
@@ -221,6 +235,65 @@ async function moveToHistory(matchId: string, match: GameMatch): Promise<void> {
   await remove(ref(db, `matchConfirmations/${matchId}`));
 }
 
+async function recordPlayerHistory(
+  match: GameMatch,
+  winnerIds: string[],
+  loserIds: string[],
+  endedAt: string,
+  duration: number
+): Promise<void> {
+  const playerById = new Map(match.players.map((player) => [player.id, player]));
+  const teamAIds = new Set(match.teamA?.playerIds ?? []);
+  const teamBIds = new Set(match.teamB?.playerIds ?? []);
+
+  function resolvePartnerName(playerId: string): string {
+    if (match.mode !== "doubles") return "";
+    const teamIds = teamAIds.has(playerId) ? teamAIds : teamBIds;
+    const partnerId = Array.from(teamIds).find((id) => id !== playerId);
+    return partnerId ? playerById.get(partnerId)?.name || "" : "";
+  }
+
+  function resolveOpponentName(playerId: string): string {
+    if (match.mode === "doubles") {
+      return teamAIds.has(playerId)
+        ? match.teamB?.name || "Equipe adversária"
+        : match.teamA?.name || "Equipe adversária";
+    }
+
+    const opponentNames = match.players
+      .filter((player) => player.id !== playerId)
+      .map((player) => player.name);
+
+    if (opponentNames.length === 0) return "Adversário";
+    if (opponentNames.length === 1) return opponentNames[0]!;
+    return opponentNames.join(" x ");
+  }
+
+  async function writeRecord(playerId: string, result: "win" | "loss"): Promise<void> {
+    const record: PlayerMatchHistoryData = {
+      playerId,
+      date: endedAt.split("T")[0] || endedAt,
+      time: endedAt.split("T")[1]?.substring(0, 5) || "",
+      mode: match.mode,
+      opponent: resolveOpponentName(playerId),
+      partner: resolvePartnerName(playerId),
+      result,
+      duration,
+      tournament: match.tournament,
+    };
+
+    await set(push(ref(db, "matches")), record);
+  }
+
+  for (const playerId of winnerIds) {
+    await writeRecord(playerId, "win");
+  }
+
+  for (const playerId of loserIds) {
+    await writeRecord(playerId, "loss");
+  }
+}
+
 export async function updatePlayerStats(
   playerIds: string[],
   result: "win" | "loss"
@@ -232,7 +305,6 @@ export async function updatePlayerStats(
       totalMatches?: number;
       wins?: number;
       losses?: number;
-      score?: number;
       currentStreak?: number;
       bestStreak?: number;
     };
@@ -240,8 +312,6 @@ export async function updatePlayerStats(
     const totalMatches = (d.totalMatches || 0) + 1;
     const wins = (d.wins || 0) + (result === "win" ? 1 : 0);
     const losses = (d.losses || 0) + (result === "loss" ? 1 : 0);
-    const scoreChange = result === "win" ? 25 : -15;
-    const score = Math.max(0, (d.score || 0) + scoreChange);
 
     let currentStreak = d.currentStreak || 0;
     let bestStreak = d.bestStreak || 0;
@@ -257,7 +327,6 @@ export async function updatePlayerStats(
       totalMatches,
       wins,
       losses,
-      score,
       currentStreak,
       bestStreak,
     });
@@ -288,7 +357,9 @@ export async function getMatchHistory(filters?: {
   const matches: GameMatch[] = [];
   snap.forEach((child) => {
     const d = child.val() as MatchData;
-    matches.push({ id: child.key!, ...d });
+    if (Array.isArray(d.players)) {
+      matches.push({ id: child.key!, ...d });
+    }
   });
 
   matches.sort((a, b) => {
@@ -316,12 +387,17 @@ export async function getMatchHistory(filters?: {
   return { matches: paginated, total, page, pageSize, totalPages };
 }
 
-export async function getRecentMatches(uid: string, limit = 5): Promise<GameMatch[]> {
+export async function cancelMatch(matchId: string): Promise<void> {
+  await remove(ref(db, `activeMatches/${matchId}`));
+  await remove(ref(db, `matchConfirmations/${matchId}`));
+}
+
+export async function getRecentMatches(uid: string): Promise<GameMatch[]> {
   const snap = await get(ref(db, "matches"));
   const matches: GameMatch[] = [];
   snap.forEach((child) => {
     const d = child.val() as MatchData;
-    const isParticipant = d.players.some((p) => p.id === uid);
+    const isParticipant = (d.players ?? []).some((p) => p.id === uid);
     if (isParticipant) {
       matches.push({ id: child.key!, ...d });
     }
@@ -331,5 +407,5 @@ export async function getRecentMatches(uid: string, limit = 5): Promise<GameMatc
     const dateB = b.endedAt || b.createdAt;
     return new Date(dateB).getTime() - new Date(dateA).getTime();
   });
-  return matches.slice(0, limit);
+  return matches;
 }

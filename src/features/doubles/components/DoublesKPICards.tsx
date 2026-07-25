@@ -88,8 +88,8 @@ export function DoublesKPICards() {
     },
     {
       icon: <Star className="h-5 w-5" />,
-      label: "Pontuação",
-      value: stats.score.toLocaleString("pt-BR"),
+      label: "Vitórias",
+      value: stats.wins,
     },
     {
       icon: <Flame className="h-5 w-5" />,
