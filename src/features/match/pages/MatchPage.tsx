@@ -25,6 +25,9 @@ import { TeamCard } from "../components/TeamCard";
 import { VictoryConfirmModal } from "../components/VictoryConfirmModal";
 import { MatchResultOverlay } from "../components/MatchResultOverlay";
 import { ActiveMatchCard } from "../components/ActiveMatchCard";
+import { ZoomControl } from "../components/ZoomControl";
+import { DominoGamePanel } from "../components/domino/DominoGamePanel";
+import { useScreenZoom } from "../hooks/useScreenZoom";
 import type { GameMatch } from "@/shared/types";
 
 const containerVariants = {
@@ -50,6 +53,7 @@ export default function MatchPage() {
   const confirmVictory = useConfirmVictory();
   const cancelMatch = useCancelMatch();
   const { data: confirmations } = useConfirmations(activeMatch?.id ?? null);
+  const { zoom, zoomIn, zoomOut } = useScreenZoom();
 
   const confirmedPlayerIds = confirmations?.map((c) => c.playerId) ?? [];
   const currentPlayerConfirmed = user?.uid
@@ -58,6 +62,11 @@ export default function MatchPage() {
 
   const isMyTeamA =
     activeMatch?.teamA?.playerIds.includes(user?.uid || "") ?? false;
+
+  // The domino engine covers every 2- or 4-player table (doubles is always 4)
+  // and registers the result itself — no manual "I won" button on those.
+  const isDominoSupported =
+    activeMatch?.playerCount === 2 || activeMatch?.playerCount === 4;
 
   function handleConfirmVictory() {
     if (!activeMatch || !user) return;
@@ -138,10 +147,13 @@ export default function MatchPage() {
           <Skeleton className="h-40 w-full rounded-xl" />
         </motion.div>
       ) : activeMatch ? (
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-green-500" />
-            <h2 className="text-lg font-bold text-text">Partida em Andamento</h2>
+        <motion.div variants={itemVariants} className="space-y-4" style={{ zoom }}>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-green-500" />
+              <h2 className="text-lg font-bold text-text">Partida em Andamento</h2>
+            </div>
+            <ZoomControl zoom={zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} />
           </div>
 
           <div className="rounded-2xl border border-surface-border bg-surface p-4 sm:p-6">
@@ -191,25 +203,45 @@ export default function MatchPage() {
 
             {/* Players / Teams */}
             {activeMatch.mode === "individual" ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {activeMatch.players.map((player) => (
-                  <PlayerCard
-                    key={player.id}
-                    player={player}
-                    isWinner={activeMatch.winnerId === player.id}
-                    hasConfirmed={
-                      activeMatch.status === "finished"
-                        ? activeMatch.winnerId === player.id
-                        : confirmedPlayerIds.includes(player.id)
-                    }
-                    canConfirm={
-                      activeMatch.status === "in_progress" &&
-                      user?.uid === player.id &&
-                      !currentPlayerConfirmed
-                    }
-                    onConfirm={() => setShowVictoryModal(true)}
-                  />
-                ))}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {activeMatch.players.map((player) => (
+                    <PlayerCard
+                      key={player.id}
+                      player={player}
+                      isWinner={activeMatch.winnerId === player.id}
+                      hasConfirmed={
+                        activeMatch.status === "finished"
+                          ? activeMatch.winnerId === player.id
+                          : confirmedPlayerIds.includes(player.id)
+                      }
+                      canConfirm={
+                        activeMatch.status === "in_progress" &&
+                        !isDominoSupported &&
+                        user?.uid === player.id &&
+                        !currentPlayerConfirmed
+                      }
+                      onConfirm={() => setShowVictoryModal(true)}
+                    />
+                  ))}
+                </div>
+
+                {/* Playable table — the engine covers 2- and 4-player individual tables. */}
+                {activeMatch.status === "in_progress" && isDominoSupported && (
+                  <>
+                    <DominoGamePanel
+                      match={activeMatch}
+                      onConfirmVictory={handleConfirmVictory}
+                      isConfirming={confirmVictory.isPending}
+                      hasConfirmed={currentPlayerConfirmed}
+                    />
+                    {!currentPlayerConfirmed && (
+                      <p className="text-center text-sm text-text-muted">
+                        Jogue na mesa acima — o resultado é registrado automaticamente quando a partida terminar.
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -229,6 +261,7 @@ export default function MatchPage() {
                     )}
                     canConfirm={
                       activeMatch.status === "in_progress" &&
+                      !isDominoSupported &&
                       isMyTeamA &&
                       !currentPlayerConfirmed
                     }
@@ -250,6 +283,7 @@ export default function MatchPage() {
                     )}
                     canConfirm={
                       activeMatch.status === "in_progress" &&
+                      !isDominoSupported &&
                       !isMyTeamA &&
                       !currentPlayerConfirmed
                     }
@@ -258,13 +292,23 @@ export default function MatchPage() {
                   />
                 </div>
 
+                {/* Playable table — doubles is always 4 players, which the engine covers. */}
+                {activeMatch.status === "in_progress" && isDominoSupported && (
+                  <DominoGamePanel
+                    match={activeMatch}
+                    onConfirmVictory={handleConfirmVictory}
+                    isConfirming={confirmVictory.isPending}
+                    hasConfirmed={currentPlayerConfirmed}
+                  />
+                )}
+
                 {activeMatch.status === "in_progress" &&
                   activeMatch.mode === "doubles" &&
                   !currentPlayerConfirmed && (
                     <p className="text-center text-sm text-text-muted">
                       {confirmations && confirmations.length > 0
                         ? "Aguardando confirmação do parceiro."
-                        : "Confirme a vitória da sua dupla quando o jogo terminar."}
+                        : "Jogue na mesa acima — o resultado é registrado automaticamente quando a partida terminar."}
                     </p>
                   )}
               </div>

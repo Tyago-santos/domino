@@ -119,11 +119,13 @@ export async function createMatch(data: {
     status: "waiting",
     playerCount: data.playerCount,
     players: data.players,
-    teamA: data.teamA,
-    teamB: data.teamB,
     createdAt: new Date().toISOString(),
     createdBy: data.createdBy,
     createdByName: data.createdByName,
+    // Realtime Database rejects `set()` outright if any property is undefined,
+    // so teamA/teamB are only included when the match is actually doubles.
+    ...(data.teamA ? { teamA: data.teamA } : {}),
+    ...(data.teamB ? { teamB: data.teamB } : {}),
   };
   await set(newRef, matchData);
   return { id: newRef.key!, ...matchData };

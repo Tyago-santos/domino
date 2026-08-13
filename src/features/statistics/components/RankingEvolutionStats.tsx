@@ -17,7 +17,8 @@ interface RankingEvolutionStatsProps {
 }
 
 function formatDate(dateStr: string) {
-  const date = new Date(dateStr);
+  const [y, m, d] = dateStr.split("-");
+  const date = new Date(Number(y), Number(m) - 1, Number(d) || 1);
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 

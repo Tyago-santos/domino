@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { BarChart3, TrendingUp, Clock, CalendarDays } from "lucide-react";
-import { Select } from "@/components/ui";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui";
+import { PeriodFilter } from "@/features/dashboard/components/PeriodFilter";
 import { RankingEvolutionStats } from "../components/RankingEvolutionStats";
 import { WinsByMonthChart } from "../components/WinsByMonthChart";
 import { MatchesByWeekChart } from "../components/MatchesByWeekChart";
@@ -10,15 +10,7 @@ import { WinRateChart } from "../components/WinRateChart";
 import { AvgDurationChart } from "../components/AvgDurationChart";
 import { WeeklyFrequencyChart } from "../components/WeeklyFrequencyChart";
 import { ActiveHoursChart } from "../components/ActiveHoursChart";
-import type { PeriodFilter } from "@/shared/types";
-
-const PERIOD_OPTIONS = [
-  { value: "today", label: "Hoje" },
-  { value: "7days", label: "Últimos 7 dias" },
-  { value: "30days", label: "Últimos 30 dias" },
-  { value: "90days", label: "Últimos 90 dias" },
-  { value: "year", label: "Último ano" },
-];
+import type { PeriodFilter as PeriodFilterType } from "@/shared/types";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -40,7 +32,7 @@ const itemVariants = {
 };
 
 export default function StatisticsPage() {
-  const [period, setPeriod] = useState<PeriodFilter>("30days");
+  const [period, setPeriod] = useState<PeriodFilterType>("30days");
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -51,13 +43,8 @@ export default function StatisticsPage() {
             Análise detalhada do seu desempenho no dominó
           </p>
         </div>
-        <div className="w-full sm:w-56">
-          <Select
-            options={PERIOD_OPTIONS}
-            value={period}
-            onChange={(e) => setPeriod(e.target.value as PeriodFilter)}
-            label="Período"
-          />
+        <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible">
+          <PeriodFilter value={period} onChange={setPeriod} />
         </div>
       </div>
 
