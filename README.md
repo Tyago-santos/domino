@@ -24,11 +24,11 @@
 
 | | |
 |---|---|
-| [🎯 O que é](#o-que-e) | [🀰 As regras do jogo](#as-regras-do-jogo) |
-| [✨ Funcionalidades](#funcionalidades) | [🔥 Como joga](#como-joga) |
-| [🧩 Como funciona](#como-funciona) | [🚀 Como rodar](#como-rodar) |
-| [🧪 Testes](#testes) | [☁️ Deploy](#deploy) |
-| [🛠️ Tecnologias](#tecnologias) | [📝 Notas](#notas) |
+| [🎯 O que é](#user-content-o-que-e) | [🀰 As regras do jogo](#user-content-as-regras-do-jogo) |
+| [✨ Funcionalidades](#user-content-funcionalidades) | [🔥 Como joga](#user-content-como-joga) |
+| [🧩 Como funciona](#user-content-como-funciona) | [🚀 Como rodar](#user-content-como-rodar) |
+| [🧪 Testes](#user-content-testes) | [☁️ Deploy](#user-content-deploy) |
+| [🛠️ Tecnologias](#user-content-tecnologias) | [📝 Notas](#user-content-notas) |
 
 ---
 
